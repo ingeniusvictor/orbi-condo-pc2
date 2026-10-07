@@ -1,4 +1,4 @@
-import type {MaintenanceEvent} from "./maintenance-alerts";
+import type {MaintenanceEvent} from "../lib/maintenance-alerts";
 /** Explicitly fictional examples. Never feed these records into a live notification job. */
 export const DEMO_EVENTS:MaintenanceEvent[]=[
  {id:"demo-lift",communityId:"demo-pc2",assetId:"lift",assetName:"Ascensores",dueDate:"2030-04-20"},
