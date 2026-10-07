@@ -11,6 +11,7 @@ import {community} from "../data/community";
 const label:any={scheduled:["PROGRAMADA","warn"],ondemand:["A REQUERIMIENTO","muted"]};
 const filters=["Todos","Mensual","Bimensual","Trimestral","Por requerimiento"];
 const months=["ENE","FEB","MAR","ABR","MAY","JUN","JUL","AGO","SEP","OCT","NOV","DIC"];
+const monthName=new Intl.DateTimeFormat("es-CL",{month:"long"}).format(new Date()).replace(/^./,x=>x.toUpperCase());
 
 export default function Home(){
  const [filter,setFilter]=useState("Todos");
@@ -35,6 +36,17 @@ export default function Home(){
  
  <section className="identity"><div className="identityPhoto" role="img" aria-label={`Acceso de ${community.name}`}/><div className="identityCopy"><p className="eyebrow">UN LUGAR REAL · UNA EXPERIENCIA NUEVA</p><h2>{community.name},<br/><em>ahora también digital.</em></h2><p>Un condominio de {community.housingCount} viviendas en {community.city}, transformado en el primer concepto ORBI Condo: información cotidiana presentada con claridad, identidad y diseño.</p><div className="identityFacts"><span><b>{community.housingCount}</b> viviendas</span><span><b>{community.housingProgram}</b> integración social</span><span><b>{community.city}</b> {community.region}</span></div></div></section>
  
+ <section className="commandDeck" aria-label="Resumen de la comunidad">
+   <div className="commandHead"><div><p className="eyebrow">CENTRO DIGITAL PC2</p><h2>Tu comunidad,<br/><em>en contexto.</em></h2></div><p>Una lectura rápida del mantenimiento declarado, los responsables identificados y las referencias anuales del calendario original.</p></div>
+   <div className="commandGrid">
+     <article className="commandPrimary"><div className="commandPrimaryTop"><span className="commandPulse"><i/>VISTA INFORMATIVA</span><small>{monthName.toUpperCase()} · 2026</small></div><strong>{monthly.toString().padStart(2,"0")}</strong><h3>Rutinas mensuales declaradas</h3><p>Ascensores, jardín, control de plagas y piscina forman el pulso mensual publicado para PC2.</p><a href="#maintenance">Explorar sistemas <span>↘</span></a></article>
+     <article className="commandMetric"><small>SISTEMAS</small><b>{String(community.systems.length).padStart(2,"0")}</b><span>inventariados en esta experiencia</span></article>
+     <article className="commandMetric"><small>PROVEEDORES</small><b>{String(community.providers.length).padStart(2,"0")}</b><span>identificados públicamente</span></article>
+     <article className="commandMetric"><small>REFERENCIAS ANUALES</small><b>{String(community.certifications.length).padStart(2,"0")}</b><span>desde el calendario fuente</span></article>
+     <article className="commandSignal"><div className="signalOrb"><i/><i/><i/></div><div><small>ORBI CONDO</small><b>Una capa visual sobre la operación real.</b><p>Sin inventar estados. Sin esconder la fuente.</p></div></article>
+   </div>
+ </section>
+
  <section className="pulse"><div><p className="eyebrow">RITMO DE MANTENIMIENTO</p><h2>La operación,<br/><em>resumida.</em></h2></div><div className="pulseGrid"><article><span className="pulseNumber">{monthly.toString().padStart(2,"0")}</span><small>Rutinas mensuales</small><i className="okLine"/></article><article><span className="pulseNumber">{bimonthly.toString().padStart(2,"0")}</span><small>Rutina bimensual</small><i className="warnLine"/></article><article><span className="pulseNumber">{quarterly.toString().padStart(2,"0")}</span><small>Rutina trimestral</small><i className="certLine"/></article><article><span className="pulseNumber">{demand.toString().padStart(2,"0")}</span><small>A requerimiento</small><i className="mutedLine"/></article></div></section>
  
  <BeforeAfter/>
