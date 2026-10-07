@@ -6,3 +6,44 @@
 @media(max-width:900px){.pilot{display:none}.heroStats{position:relative;right:auto;bottom:auto;margin-top:80px;display:grid;grid-template-columns:1fr 1fr}.split,.security,.pulse{grid-template-columns:1fr}.systems{grid-template-columns:1fr 1fr}.months{grid-template-columns:repeat(4,1fr)}.providerGrid{grid-template-columns:1fr 1fr}.certs{grid-template-columns:1fr}.heroCopy{margin-top:15vh}.identity{grid-template-columns:1fr}.identityPhoto{min-height:520px}.identityCopy{padding:70px 7vw}.pulseGrid{grid-template-columns:repeat(4,1fr)}.pulseGrid article{min-height:145px}.pulseNumber{font-size:38px}}
 @media(max-width:600px){.hero{min-height:900px}.hero h1{font-size:64px}.systems{grid-template-columns:1fr}.system{min-height:390px}.providerGrid{grid-template-columns:1fr}.months{grid-template-columns:repeat(3,1fr)}.month{min-height:105px}.actions{align-items:flex-start;flex-direction:column}.intro,.calendar,.providers,.security,.future,.pulse{padding-top:80px;padding-bottom:80px}.future{min-height:760px}footer{flex-direction:column;gap:12px}.heroPhoto{background-position:62% center;opacity:.28}.heroShade{background:linear-gradient(90deg,rgba(4,14,16,.95),rgba(4,14,16,.58)),linear-gradient(0deg,#071013 0%,transparent 50%)}.identityPhoto{min-height:420px}.identityCopy{padding:60px 24px}.identityFacts{flex-direction:column;align-items:flex-start}.pulseGrid{grid-template-columns:1fr 1fr}.filters{overflow-x:auto;flex-wrap:nowrap;padding-bottom:5px}.filters button{white-space:nowrap}.drawerData{grid-template-columns:1fr}.drawerData div:last-child{grid-column:auto}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.r2,.drawerVisual i:last-child{animation:none}*{transition:none!important}}
+
+
+/* OC-PC2-14 · Hero collision hardening
+   Keep CTA, live state and KPI rail in normal document flow so viewport
+   height/width combinations can never make them overlap. */
+.heroCopy{margin-bottom:0}
+.actions{flex-wrap:wrap;row-gap:16px}
+.heroStats{
+  position:relative;
+  right:auto;
+  bottom:auto;
+  width:min(760px,100%);
+  margin-top:clamp(52px,7vh,82px);
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:0;
+  z-index:3;
+}
+.heroStats div{min-width:0;padding:3px 18px 3px 14px}
+.heroStats b{font-variant-numeric:tabular-nums}
+.heroStats span{line-height:1.35}
+@media(max-width:900px){
+  .heroStats{
+    position:relative;
+    right:auto;
+    bottom:auto;
+    margin-top:56px;
+    grid-template-columns:repeat(4,minmax(0,1fr));
+  }
+}
+@media(max-width:700px){
+  .heroStats{grid-template-columns:repeat(2,minmax(0,1fr));gap:24px 0}
+  .heroStats div:nth-child(odd){border-left-color:#21413f}
+  .actions{align-items:flex-start}
+}
+@media(max-width:420px){
+  .heroStats{margin-top:46px;gap:20px 0}
+  .heroStats div{padding-right:10px}
+  .heroStats b{font-size:21px}
+  .heroStats span{font-size:8px}
+}
