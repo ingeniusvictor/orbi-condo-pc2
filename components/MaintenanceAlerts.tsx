@@ -1,7 +1,7 @@
 "use client";
 import {useMemo,useState} from "react";
 import {DEMO_EVENTS,DEMO_REFERENCE_TIME} from "../data/maintenance-alerts-demo";
-import {DEFAULT_ALERT_POLICY,evaluateMaintenanceAlerts} from "../data/maintenance-alerts";
+import {DEFAULT_ALERT_POLICY,evaluateMaintenanceAlerts} from "../lib/maintenance-alerts";
 const labels={upcoming:"PRÓXIMA",due:"VENCE HOY",overdue:"VENCIDA"};
 export default function MaintenanceAlerts(){
  const [days,setDays]=useState<number[]>([30,7,1]);
