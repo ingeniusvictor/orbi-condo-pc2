@@ -1,2 +1,46 @@
 /* OC-PC2-04 · Source-faithful annual rhythm */
 .calendarLegend{display:flex;flex-wrap:wrap;gap:8px;margin-top:42px}.calendarLegend span{border:1px solid #1b393a;background:#0b1c1e;border-radius:999px;padding:10px 14px;color:#78918f;font-size:9px;letter-spacing:.07em;text-transform:uppercase}.calendarLegend b{color:#d9fff8;margin-right:5px}.month{min-height:145px}.monthHead{display:flex;align-items:center;justify-content:space-between;gap:8px}.monthHead>small{font-size:6px;letter-spacing:.12em;border:1px solid currentColor;border-radius:99px;padding:4px 6px;opacity:.7}.routinePips{display:grid;grid-template-columns:repeat(4,1fr);gap:4px}.routinePips i{height:34px;border-radius:8px;background:linear-gradient(180deg,rgba(101,245,223,.22),rgba(101,245,223,.05));border:1px solid rgba(101,245,223,.16)}.month.active .routinePips i{background:rgba(7,19,17,.18);border-color:rgba(7,19,17,.18)}.month>p{margin:0;font-size:8px;line-height:1.35;text-transform:uppercase;letter-spacing:.08em;opacity:.72}.calendarNote{max-width:760px;line-height:1.6}@media(max-width:600px){.calendarLegend{display:grid;grid-template-columns:1fr 1fr}.month{min-height:118px}.routinePips i{height:24px}.monthHead>small{display:none}}
+
+
+/* OC-PC2-16 · Visual Experience Pass */
+.commandDeck{padding:110px clamp(24px,6vw,92px);background:radial-gradient(circle at 16% 22%,rgba(101,245,223,.07),transparent 24%),#071214;border-top:1px solid #132d2e;border-bottom:1px solid #132d2e}
+.commandHead{display:grid;grid-template-columns:1fr .72fr;gap:70px;align-items:end;margin-bottom:42px}
+.commandHead h2{font-size:clamp(42px,5.6vw,82px);line-height:.94;letter-spacing:-.055em;margin:20px 0 0}
+.commandHead h2 em{font-style:normal;color:#65f5df}
+.commandHead>p{max-width:520px;color:#78918f;line-height:1.7;margin:0}
+.commandGrid{display:grid;grid-template-columns:1.45fr repeat(3,.62fr);grid-template-rows:auto auto;gap:12px}
+.commandGrid article{border:1px solid #193839;border-radius:22px;background:linear-gradient(145deg,rgba(14,39,41,.9),rgba(7,20,22,.86));overflow:hidden}
+.commandPrimary{grid-row:1/3;padding:28px;min-height:420px;display:flex;flex-direction:column;position:relative;background:radial-gradient(circle at 80% 15%,rgba(101,245,223,.12),transparent 34%),linear-gradient(145deg,#10282a,#081719)!important}
+.commandPrimary:after{content:"";position:absolute;width:260px;height:260px;border:1px solid rgba(101,245,223,.12);border-radius:50%;right:-75px;top:60px;box-shadow:0 0 0 45px rgba(101,245,223,.025),0 0 0 90px rgba(101,245,223,.018)}
+.commandPrimaryTop{display:flex;justify-content:space-between;gap:18px;align-items:center;position:relative;z-index:1}
+.commandPrimaryTop>small{font-size:7px;letter-spacing:.14em;color:#5d7976}
+.commandPulse{font-size:7px;letter-spacing:.14em;color:#91b4b0;display:flex;align-items:center;gap:7px}
+.commandPulse i{width:6px;height:6px;border-radius:50%;background:#65f5df;box-shadow:0 0 12px #65f5df}
+.commandPrimary>strong{font-size:clamp(82px,9vw,128px);letter-spacing:-.08em;line-height:.8;margin-top:auto;position:relative;z-index:1;font-variant-numeric:tabular-nums}
+.commandPrimary h3{font-size:21px;margin:22px 0 8px;position:relative;z-index:1}
+.commandPrimary p{max-width:440px;color:#718b88;font-size:12px;line-height:1.65;margin:0;position:relative;z-index:1}
+.commandPrimary a{margin-top:24px;width:max-content;color:#65f5df;font-size:10px;letter-spacing:.06em;position:relative;z-index:1}
+.commandPrimary a span{margin-left:8px}
+.commandMetric{min-height:195px;padding:22px;display:flex;flex-direction:column}
+.commandMetric small,.commandSignal small{font-size:7px;letter-spacing:.14em;color:#66817e}
+.commandMetric b{font-size:42px;letter-spacing:-.05em;margin-top:auto}
+.commandMetric span{font-size:8px;color:#617a77;line-height:1.45;text-transform:uppercase;letter-spacing:.06em}
+.commandSignal{grid-column:2/5;padding:24px;display:grid;grid-template-columns:110px 1fr;gap:24px;align-items:center;min-height:150px}
+.signalOrb{width:90px;height:90px;border:1px solid #2a5c58;border-radius:50%;display:grid;place-items:center;position:relative;background:radial-gradient(circle,rgba(101,245,223,.12),transparent 65%)}
+.signalOrb:after{content:"O";font-weight:900;color:#65f5df;font-size:23px}
+.signalOrb i{position:absolute;inset:10px;border:1px solid rgba(101,245,223,.16);border-radius:50%}
+.signalOrb i:nth-child(2){inset:22px;transform:rotate(58deg);border-radius:42% 58%}
+.signalOrb i:nth-child(3){inset:-7px;border-style:dashed;animation:spin 24s linear infinite}
+.commandSignal b{display:block;font-size:19px;margin:7px 0}
+.commandSignal p{margin:0;color:#617a77;font-size:10px}
+.system{position:relative;overflow:hidden}
+.system:after{content:"";position:absolute;inset:auto -40% -55% -40%;height:150px;background:radial-gradient(ellipse,rgba(101,245,223,.08),transparent 65%);opacity:0;transition:opacity .3s;pointer-events:none}
+.system:hover:after{opacity:1}
+.month{transition:transform .22s,border-color .22s,background .22s}
+.month:not(.active):hover{transform:translateY(-4px);border-color:#2a5553;background:#0c2022}
+.providerCard{transition:transform .25s,border-color .25s,background .25s}
+.providerCard:hover{transform:translateY(-5px);border-color:#2a5553;background:#0a1c1e}
+@media(max-width:1100px){.commandGrid{grid-template-columns:1.2fr repeat(3,.7fr)}}
+@media(max-width:900px){.commandHead{grid-template-columns:1fr}.commandGrid{grid-template-columns:1fr 1fr}.commandPrimary{grid-column:1/3;grid-row:auto;min-height:380px}.commandSignal{grid-column:1/3}.commandMetric{min-height:160px}.commandMetric:nth-of-type(4){grid-column:1/3}}
+@media(max-width:600px){.commandDeck{padding:82px 24px}.commandHead{gap:25px}.commandGrid{grid-template-columns:1fr 1fr;gap:8px}.commandPrimary{grid-column:1/3;padding:22px;min-height:355px}.commandPrimary>strong{font-size:86px}.commandMetric{min-height:145px;padding:17px}.commandMetric b{font-size:34px}.commandMetric:nth-of-type(4){grid-column:auto}.commandSignal{grid-column:1/3;grid-template-columns:72px 1fr;padding:18px;gap:15px}.signalOrb{width:64px;height:64px}.commandSignal b{font-size:15px}.commandSignal p{font-size:8px}}
+@media(prefers-reduced-motion:reduce){.signalOrb i:nth-child(3){animation:none}.month,.providerCard,.system:after{transition:none}}
