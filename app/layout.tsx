@@ -8,6 +8,7 @@ import "./icons.css";
 import "./community-map.css";
 import "./pocket.css";
 import "./maintenance-alerts.css";
+import "./governance-voice.css";
 
 export const metadata:Metadata={
  title:"Parque Ciudadano II · ORBI Condo",
