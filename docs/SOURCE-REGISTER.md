@@ -22,7 +22,20 @@ Source-backed fields used by the showcase:
 
 The source also includes weekly green/yellow/red maintenance cells. The web concept does **not** infer a precise live completion state from those cells unless the exact weekly mapping has been validated.
 
-## Public web verification
+## Official public project evidence
+### Ministerio de Vivienda y Urbanismo — Chile
+Recent MINVU public records identify:
+- Programa: DS 19 / Programa de Integración Social
+- Región: O'Higgins
+- Comuna: Rancagua
+- Nombre: Condominio Parque Ciudadano II
+- Código: 153778
+- N° viviendas: 278
+
+Official source used for verification:
+- https://www.minvu.gob.cl/wp-content/uploads/2026/03/INFORME-PEH.pdf
+
+## Public provider verification
 ### Atlagich Ascensores
 - Website: https://atlagich.com/
 - Used only for provider identity/link enrichment.
