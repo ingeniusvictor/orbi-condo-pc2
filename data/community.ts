@@ -1,12 +1,12 @@
-export type Status="done"|"next"|"pending"|"ondemand";
+export type Status="scheduled"|"ondemand";
 export const community={name:"Parque Ciudadano II",city:"Rancagua",tagline:"Tu comunidad, más clara. Más conectada.",systems:[
-{icon:"🛗",name:"Ascensores",frequency:"Mensual",provider:"Atlagich Ascensores",status:"next" as Status,note:"Mantención preventiva residencial"},
-{icon:"💧",name:"Sala de Bombas",frequency:"Bimensual",provider:"Servicios Hidropotable",status:"done" as Status,note:"Presurización y sistemas de bombeo"},
+{icon:"🛗",name:"Ascensores",frequency:"Mensual",provider:"Atlagich Ascensores",status:"scheduled" as Status,note:"Mantención preventiva residencial"},
+{icon:"💧",name:"Sala de Bombas",frequency:"Bimensual",provider:"Servicios Hidropotable",status:"scheduled" as Status,note:"Presurización y sistemas de bombeo"},
 {icon:"⚡",name:"Grupo Electrógeno",frequency:"Por requerimiento",provider:"Por confirmar",status:"ondemand" as Status,note:"Respaldo energético del condominio"},
-{icon:"🌿",name:"Jardín",frequency:"Mensual",provider:"Juan Figueroa",status:"done" as Status,note:"Áreas verdes y entorno común"},
-{icon:"🛡️",name:"Control de Plagas",frequency:"Mensual",provider:"APR Control de Plagas",status:"next" as Status,note:"Prevención y control sanitario"},
-{icon:"🏊",name:"Piscina",frequency:"Mensual",provider:"WS SpA",status:"next" as Status,note:"Mantención de piscina"},
-{icon:"📹",name:"CCDD · CCTV",frequency:"Trimestral",provider:"DC Servicios Integrales",status:"done" as Status,note:"Seguridad y videovigilancia"},
+{icon:"🌿",name:"Jardín",frequency:"Mensual",provider:"Juan Figueroa",status:"scheduled" as Status,note:"Áreas verdes y entorno común"},
+{icon:"🛡️",name:"Control de Plagas",frequency:"Mensual",provider:"APR Control de Plagas",status:"scheduled" as Status,note:"Prevención y control sanitario"},
+{icon:"🏊",name:"Piscina",frequency:"Mensual",provider:"WS SpA",status:"scheduled" as Status,note:"Mantención de piscina"},
+{icon:"📹",name:"CCDD · CCTV",frequency:"Trimestral",provider:"DC Servicios Integrales",status:"scheduled" as Status,note:"Seguridad y videovigilancia"},
 {icon:"🌬️",name:"Presurización y Extracción",frequency:"Por requerimiento",provider:"Por confirmar",status:"ondemand" as Status,note:"Ventilación de espacios comunes"},
 {icon:"🔥",name:"Sistema Contra Incendio",frequency:"Por requerimiento",provider:"Por confirmar",status:"ondemand" as Status,note:"Protección contra incendios"}],providers:[
 {name:"Atlagich Ascensores",service:"Ascensores",verified:true,web:"https://atlagich.com/",detail:"Servicio residencial · atención 24/7"},
