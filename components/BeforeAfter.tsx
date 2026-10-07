@@ -20,7 +20,7 @@ export default function BeforeAfter(){
      <motion.article className="orbiCard" initial={{opacity:0,x:20,y:20}} whileInView={{opacity:1,x:0,y:0}} viewport={{once:true}} transition={{delay:.12}}>
        <div className="compareLabel">AHORA · ORBI CONDO</div>
        <div className="orbiMiniTop"><span>O</span><div><small>PARQUE CIUDADANO II</small><b>Mantenimiento</b></div><i/></div>
-       <div className="orbiMiniHero"><small>PRÓXIMA RUTINA</small><strong>Ascensores</strong><p>Mensual · Atlagich Ascensores</p></div>
+       <div className="orbiMiniHero"><small>RUTINA MENSUAL</small><strong>Ascensores</strong><p>Mensual · Atlagich Ascensores</p></div>
        <div className="orbiMiniMetrics"><span><b>04</b>Mensuales</span><span><b>01</b>Bimensual</span><span><b>01</b>Trimestral</span></div>
        <div className="orbiMiniLine"><i/><b/><b/><b/><b/><b/></div>
      </motion.article>
