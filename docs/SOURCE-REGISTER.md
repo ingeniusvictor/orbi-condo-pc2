@@ -35,6 +35,23 @@ Recent MINVU public records identify:
 Official source used for verification:
 - https://www.minvu.gob.cl/wp-content/uploads/2026/03/INFORME-PEH.pdf
 
+## Public amenity evidence
+Public project pages for Parque Ciudadano II list the following equipment:
+- Piscina
+- Patio / Jardín
+- Zona juegos
+- Sala uso múltiple
+- Bicicleteros
+- Quincho
+- Estacionamientos
+- Portería
+- Terraza
+- Zona reciclaje
+- Zona con máquinas de ejercicios
+
+Public source used for this prototype layer:
+- https://www.enlaceinmobiliario.cl/subsidio/rancagua/departamento/condominio-parque-ciudadano-ii/6025/
+
 ## Public provider verification
 ### Atlagich Ascensores
 - Website: https://atlagich.com/
