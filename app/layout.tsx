@@ -5,6 +5,7 @@ import "./oc-pc2.css";
 import "./navigation.css";
 import "./transformation.css";
 import "./icons.css";
+import "./community-map.css";
 
 export const metadata:Metadata={
  title:"Parque Ciudadano II · ORBI Condo",
