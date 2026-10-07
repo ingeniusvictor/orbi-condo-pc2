@@ -21,11 +21,11 @@ export const community={
   {name:"Sistema Contra Incendio",frequency:"Por requerimiento",provider:"Por confirmar",status:"ondemand",note:"Protección contra incendios"}
  ],
  providers:[
-  {name:"Atlagich Ascensores",service:"Ascensores",verified:true,web:"https://atlagich.com/",detail:"Servicio residencial · atención 24/7"},
-  {name:"Servicios Hidropotable",service:"Sala de Bombas",verified:true,web:"https://hidropotable.cl/",detail:"Bombas · presurización · mantención"},
-  {name:"APR Control de Plagas",service:"Control de plagas",verified:false,detail:"Identidad web pendiente de validación"},
-  {name:"WS SpA",service:"Piscina",verified:false,detail:"Identidad web pendiente de validación"},
-  {name:"DC Servicios Integrales",service:"CCDD · CCTV",verified:false,detail:"Identidad web pendiente de validación"}
+  {name:"Atlagich Ascensores",service:"Ascensores",verified:true,web:"https://atlagich.com/",detail:"Mantención residencial · emergencias 24/7"},
+  {name:"Servicios Hidropotable",service:"Sala de Bombas",verified:true,web:"https://hidropotable.cl/",detail:"Presurización · bombeo · mantención hidráulica"},
+  {name:"APR Control de Plagas",service:"Control de plagas",verified:true,web:"https://www.aprplagas.cl/",detail:"Control integrado de plagas · Rancagua"},
+  {name:"WS SpA · ORCA Piscinas",service:"Piscina",verified:true,web:"https://www.orcapiscinas.cl/",detail:"Mantención de piscinas · equipos · servicio técnico"},
+  {name:"DC Servicios Integrales SpA",service:"CCDD · CCTV",verified:true,detail:"CCTV · alarmas · control de acceso · corrientes débiles"}
  ],
  certifications:[
   {icon:"📋",name:"Plan de Emergencia",frequency:"Anual",state:"Actualizar 04-2026"},
