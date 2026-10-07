@@ -3,6 +3,7 @@ import {useMemo,useState} from "react";
 import {AnimatePresence,motion} from "framer-motion";
 import BeforeAfter from "../components/BeforeAfter";
 import CommunityMap from "../components/CommunityMap";
+import PocketExperience from "../components/PocketExperience";
 import SystemIcon from "../components/SystemIcon";
 import {community} from "../data/community";
 
@@ -35,11 +36,12 @@ export default function Home(){
  
  <section className="calendar"><div className="eyebrow">EL AÑO COMPLETO · EN UNA MIRADA</div><div className="split"><h2>Calendario<br/><em>que sí se entiende.</em></h2><p>La vista anual resume las frecuencias del calendario oficial sin reemplazar sus celdas semanales. Las cuatro rutinas mensuales están presentes durante todo el año; las bimensuales y trimestrales se consultan en su programación específica.</p></div><div className="calendarLegend"><span><b>04</b> mensuales</span><span><b>01</b> bimensual</span><span><b>01</b> trimestral</span><span><b>03</b> por requerimiento</span></div><div className="months">{months.map((m,i)=><div className={"month "+(i===currentMonth?"active":"")} key={m}><div className="monthHead"><span>{m}</span>{i===currentMonth&&<small>MES ACTUAL</small>}</div><div className="routinePips" aria-label="Cuatro rutinas mensuales"><i/><i/><i/><i/></div><p>4 rutinas mensuales</p></div>)}</div><p className="calendarNote">Referencia visual basada en las frecuencias declaradas en el calendario de mantención de {community.name}.</p></section>
  
- <section className="providers"><p className="eyebrow">QUIÉNES CUIDAN TU COMUNIDAD</p><h2>Personas y empresas<br/>detrás de cada sistema.</h2><div className="providerGrid">{community.providers.map(p=><article className="providerCard" key={p.name}><div className="providerLogo">{p.name.slice(0,2).toUpperCase()}</div><div className="verifyRow"><small>{p.service}</small>{p.verified&&<span>VERIFICADO</span>}</div><h3>{p.name}</h3><p>{p.detail}</p>{p.web?<a href={p.web} target="_blank" rel="noreferrer">Conocer proveedor ↗</a>:<span className="pending">Información por validar</span>}</article>)}</div></section>
+ <section className="providers"><p className="eyebrow">QUIÉNES CUIDAN TU COMUNIDAD</p><h2>Personas y empresas<br/>detrás de cada sistema.</h2><div className="providerGrid">{community.providers.map(p=><article className="providerCard" key={p.name}><div className="providerLogo">{p.name.slice(0,2).toUpperCase()}</div><div className="verifyRow"><small>{p.service}</small>{p.verified&&<span>VERIFICADO</span>}</div><h3>{p.name}</h3><p>{p.detail}</p>{p.web?<a href={p.web} target="_blank" rel="noreferrer">Conocer proveedor ↗</a>:<span className="pending">Identidad verificada · web pendiente</span>}</article>)}</div></section>
  
  <section className="security"><div><p className="eyebrow">SEGURIDAD & CERTIFICACIONES</p><h2>Lo importante,<br/>siempre visible.</h2><p className="securityLead">Fechas, estados y obligaciones dejan de esconderse en carpetas. La comunidad puede entender rápidamente qué documento requiere actualización, mantención o certificación.</p></div><div className="certs">{community.certifications.map((c,i)=><article key={c.name}><span>{c.icon}</span><div><small>{c.frequency}</small><h3>{c.name}</h3><p>{c.state}</p></div><b>0{i+1}</b></article>)}</div></section>
  
  <CommunityMap/>
+ <PocketExperience/>
  
  <section className="future"><div className="glow"/><p className="eyebrow">ESTO ES SOLO EL COMIENZO</p><h2>Hoy ves tu mantenimiento.<br/><em>Mañana, tu comunidad completa<br/>podría vivir aquí.</em></h2><div className="futureTags">{["Historial","Documentos","Activos","Avisos","Evidencias","Proveedores","Certificados","Comunidad"].map(x=><span key={x}>{x}<small>PRÓXIMAMENTE</small></span>)}</div><div className="signature"><div className="mark">O</div><div><b>ORBI CONDO</b><span>Smart Community Experience</span></div></div></section>
  <footer><span>Concept experience · {community.name}</span><span>Powered by ORBI Ecosystem · 2026</span></footer>
