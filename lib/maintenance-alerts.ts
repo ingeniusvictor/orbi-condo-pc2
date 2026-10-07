@@ -14,7 +14,7 @@ function dateKey(date:Date,timezone:string){
  return new Intl.DateTimeFormat("en-CA",{timeZone:timezone,year:"numeric",month:"2-digit",day:"2-digit"}).format(date);
 }
 function utcDay(key:string){
- if(!/^\\d{4}-\\d{2}-\\d{2}$/.test(key))throw new Error("Invalid ISO date");
+ if(!/^\d{4}-\d{2}-\d{2}$/.test(key))throw new Error("Invalid ISO date");
  const stamp=Date.parse(key+"T00:00:00Z");
  if(!Number.isFinite(stamp)||new Date(stamp).toISOString().slice(0,10)!==key)throw new Error("Invalid calendar date");
  return stamp;
