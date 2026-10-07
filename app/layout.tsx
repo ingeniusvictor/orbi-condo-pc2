@@ -3,6 +3,7 @@ import FloatingNav from "../components/FloatingNav";
 import "./globals.css";
 import "./oc-pc2.css";
 import "./navigation.css";
+import "./transformation.css";
 
 export const metadata:Metadata={
  title:"Parque Ciudadano II · ORBI Condo",
