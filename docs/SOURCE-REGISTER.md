@@ -55,17 +55,23 @@ Public source used for this prototype layer:
 ## Public provider verification
 ### Atlagich Ascensores
 - Website: https://atlagich.com/
-- Used only for provider identity/link enrichment.
+- Public site describes residential elevator maintenance and 24/7 emergency attention.
 
 ### Servicios Hidropotable
 - Website: https://hidropotable.cl/
-- Used only for provider identity/link enrichment.
+- Public site describes pumping, potable-water pressurization, installation and preventive/corrective maintenance.
 
-## Pending identity verification
-The following names are intentionally not linked to a public website until their exact legal/commercial identity is confirmed:
-- APR Control de Plagas
-- WS SpA
-- DC Servicios Integrales
+### APR Control Integrado de Plagas Ltda.
+- Website: https://www.aprplagas.cl/
+- Public contact information identifies Rancagua, Sixth Region, and the business as integrated pest control.
+
+### WS SpA / ORCA Piscinas WS
+- Website published in municipal procurement evidence: https://www.orcapiscinas.cl/
+- Public procurement records identify WS SpA, RUT 76.844.001-8, as ORCA Piscinas WS and document pool maintenance/equipment services.
+
+### DC Servicios Integrales SpA
+- Public company/employment records identify the business with CCTV, alarms, access control, telecommunications and weak-current systems.
+- No official company website has been added to the showcase because one has not yet been verified.
 
 ## Visual references
 Current exterior photography is used as a prototype visual reference from publicly accessible real-estate/project pages. Before a formal commercial launch, replace remote prototype references with community-owned, licensed or explicitly authorized media.
