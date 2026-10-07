@@ -2,6 +2,7 @@
 import {useMemo,useState} from "react";
 import {AnimatePresence,motion} from "framer-motion";
 import BeforeAfter from "../components/BeforeAfter";
+import CommunityMap from "../components/CommunityMap";
 import SystemIcon from "../components/SystemIcon";
 import {community} from "../data/community";
 
@@ -37,6 +38,8 @@ export default function Home(){
  <section className="providers"><p className="eyebrow">QUIÉNES CUIDAN TU COMUNIDAD</p><h2>Personas y empresas<br/>detrás de cada sistema.</h2><div className="providerGrid">{community.providers.map(p=><article className="providerCard" key={p.name}><div className="providerLogo">{p.name.slice(0,2).toUpperCase()}</div><div className="verifyRow"><small>{p.service}</small>{p.verified&&<span>VERIFICADO</span>}</div><h3>{p.name}</h3><p>{p.detail}</p>{p.web?<a href={p.web} target="_blank" rel="noreferrer">Conocer proveedor ↗</a>:<span className="pending">Información por validar</span>}</article>)}</div></section>
  
  <section className="security"><div><p className="eyebrow">SEGURIDAD & CERTIFICACIONES</p><h2>Lo importante,<br/>siempre visible.</h2><p className="securityLead">Fechas, estados y obligaciones dejan de esconderse en carpetas. La comunidad puede entender rápidamente qué documento requiere actualización, mantención o certificación.</p></div><div className="certs">{community.certifications.map((c,i)=><article key={c.name}><span>{c.icon}</span><div><small>{c.frequency}</small><h3>{c.name}</h3><p>{c.state}</p></div><b>0{i+1}</b></article>)}</div></section>
+ 
+ <CommunityMap/>
  
  <section className="future"><div className="glow"/><p className="eyebrow">ESTO ES SOLO EL COMIENZO</p><h2>Hoy ves tu mantenimiento.<br/><em>Mañana, tu comunidad completa<br/>podría vivir aquí.</em></h2><div className="futureTags">{["Historial","Documentos","Activos","Avisos","Evidencias","Proveedores","Certificados","Comunidad"].map(x=><span key={x}>{x}<small>PRÓXIMAMENTE</small></span>)}</div><div className="signature"><div className="mark">O</div><div><b>ORBI CONDO</b><span>Smart Community Experience</span></div></div></section>
  <footer><span>Concept experience · Parque Ciudadano II</span><span>Powered by ORBI Ecosystem · 2026</span></footer>
