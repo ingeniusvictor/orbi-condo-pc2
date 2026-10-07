@@ -1,6 +1,7 @@
 "use client";
 import {useMemo,useState} from "react";
 import {AnimatePresence,motion} from "framer-motion";
+import BeforeAfter from "../components/BeforeAfter";
 import {community} from "../data/community";
 
 const label:any={scheduled:["PROGRAMADA","warn"],ondemand:["A REQUERIMIENTO","muted"]};
@@ -23,6 +24,8 @@ export default function Home(){
  <section className="identity"><div className="identityPhoto" role="img" aria-label="Acceso de Parque Ciudadano II"/><div className="identityCopy"><p className="eyebrow">UN LUGAR REAL · UNA EXPERIENCIA NUEVA</p><h2>Parque Ciudadano II,<br/><em>ahora también digital.</em></h2><p>Un condominio de 278 viviendas en Rancagua, transformado en el primer concepto ORBI Condo: información cotidiana presentada con claridad, identidad y diseño.</p><div className="identityFacts"><span><b>278</b> viviendas</span><span><b>DS19</b> integración social</span><span><b>Rancagua</b> O’Higgins</span></div></div></section>
  
  <section className="pulse"><div><p className="eyebrow">RITMO DE MANTENIMIENTO</p><h2>La operación,<br/><em>resumida.</em></h2></div><div className="pulseGrid"><article><span className="pulseNumber">{monthly.toString().padStart(2,"0")}</span><small>Rutinas mensuales</small><i className="okLine"/></article><article><span className="pulseNumber">{bimonthly.toString().padStart(2,"0")}</span><small>Rutina bimensual</small><i className="warnLine"/></article><article><span className="pulseNumber">{quarterly.toString().padStart(2,"0")}</span><small>Rutina trimestral</small><i className="certLine"/></article><article><span className="pulseNumber">{demand.toString().padStart(2,"0")}</span><small>A requerimiento</small><i className="mutedLine"/></article></div></section>
+ 
+ <BeforeAfter/>
  
  <section className="intro" id="maintenance"><p className="eyebrow">MANTENIMIENTO, SIN COMPLICACIONES</p><div className="split"><h2>Entiende tu edificio<br/>de un vistazo.</h2><p>De una planilla técnica a una experiencia visual. Cada sistema tiene su frecuencia y responsable claramente identificado. Toca una tarjeta para abrir su ficha.</p></div><div className="filters" role="group" aria-label="Filtrar mantenciones">{filters.map(x=><button key={x} onClick={()=>setFilter(x)} className={filter===x?"active":""}>{x}</button>)}</div></section>
  
