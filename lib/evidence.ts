@@ -6,7 +6,8 @@ export const EVIDENCE_MAX_FILES=12;
 export const EVIDENCE_ALLOWED_TYPES=["image/jpeg","image/png","image/webp","application/pdf"] as const;
 export function validateEvidenceFiles(files:Pick<File,"name"|"size"|"type">[]):string[]{
  const errors:string[]=[];
- if(!files.length)errors.push("Adjunta al menos una fotografía o informe.");
+ if(!files.length)errors.push("Adjunta evidencia fotográfica del trabajo ejecutado.");
+ if(!files.some(file=>file.type==="image/jpeg"||file.type==="image/png"||file.type==="image/webp"))errors.push("Es obligatorio adjuntar al menos una fotografía. Un informe PDF no sustituye la evidencia fotográfica.");
  if(files.length>EVIDENCE_MAX_FILES)errors.push("Máximo 12 archivos por entrega.");
  for(const file of files){
   if(!EVIDENCE_ALLOWED_TYPES.includes(file.type as typeof EVIDENCE_ALLOWED_TYPES[number]))errors.push("Formato no permitido: "+file.name);
