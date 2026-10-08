@@ -1,7 +1,7 @@
 import {NextResponse} from "next/server";
 import {authenticate,configured,dbFetch} from "../../../../lib/server/finance-auth";
 type Draft={period:string;description:string;amount_clp:number;reason:string};
-const invalid=(d:Draft)=>!/^\\d{4}-(0[1-9]|1[0-2])$/.test(d.period)||!d.description.trim()||d.description.length>160||!Number.isSafeInteger(d.amount_clp)||!d.reason.trim()||d.reason.length>500;
+const invalid=(d:Draft)=>!/^\d{4}-(0[1-9]|1[0-2])$/.test(d.period)||!d.description.trim()||d.description.length>160||!Number.isSafeInteger(d.amount_clp)||!d.reason.trim()||d.reason.length>500;
 export async function GET(){
  if(!configured)return NextResponse.json({error:"Base de datos pendiente de configurar"},{status:503});
  const identity=await authenticate();
