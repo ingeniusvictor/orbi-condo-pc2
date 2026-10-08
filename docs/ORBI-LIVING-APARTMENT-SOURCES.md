@@ -1,0 +1,5 @@
+# ORBI LIVING — catálogo incremental de planos
+Fuente inicial: archivo recibido «Plantas C1-C2 -C3.pdf», lámina 08a, versión A, mayo 2019, escala 1:50, tres tipologías. Los valores de superficie están transcritos del cuadro de áreas (OGUC art. 1.1.2), sin asumir que son superficies útiles ni actuales. C1: interior 59.91, logia 1.82, interna 61.73, terraza computable 0, total 61.73 m²; C2: 55.29, 2.10, 57.39, 1.37, 58.76 m²; C3: 55.14, 1.93, 57.07, 0, 57.07 m².
+Matterport oficial compartido durante comercialización: https://my.matterport.com/show/?m=hMG8ApCXTX7 . El recorrido se presenta como piloto de exhibición, sin identificarlo con C1/C2/C3 ni descargar/copiar contenido. Se carga bajo interacción del visitante, con enlace externo de respaldo. Verificar permiso de inserción y disponibilidad.
+Al incorporar nuevas láminas: guardar nombre, emisor, fecha, versión, escala, tipo de plano, unidades/sistemas vinculados, datos transcritos y estado de validación. No publicar planos sensibles de seguridad, accesos o instalaciones críticas sin revisión y autorización administrativa.
+No se generan modelos 3D propios por decisión actual del proyecto.
