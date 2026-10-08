@@ -11,11 +11,11 @@ import "./maintenance-alerts.css";
 import "./governance-voice.css";
 
 export const metadata:Metadata={
- title:"Parque Ciudadano II · ORBI Condo",
+ title:"Parque Ciudadano II · ORBI LIVING",
  description:"Una nueva forma de entender el mantenimiento de tu comunidad.",
- applicationName:"ORBI Condo",
+ applicationName:"ORBI LIVING",
  robots:{index:false,follow:false},
- openGraph:{title:"Parque Ciudadano II · ORBI Condo",description:"Mantenimiento y comunidad, transformados en una experiencia clara y visual.",type:"website"}
+ openGraph:{title:"Parque Ciudadano II · ORBI LIVING",description:"Mantenimiento y comunidad, transformados en una experiencia clara y visual.",type:"website"}
 };
 
 export default function RootLayout({children}:{children:React.ReactNode}){
