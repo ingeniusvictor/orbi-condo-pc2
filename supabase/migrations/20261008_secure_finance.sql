@@ -9,7 +9,7 @@ create table if not exists public.community_members(
 create table if not exists public.finance_drafts(
  id uuid primary key default gen_random_uuid(),
  community_id text not null default 'pc2' check(community_id='pc2'),
- period text not null check(period ~ '^\\d{4}-(0[1-9]|1[0-2])$'),
+ period text not null check(period ~ '^\d{4}-(0[1-9]|1[0-2])$'),
  description text not null check(length(description) between 1 and 160),
  amount_clp bigint not null,
  reason text not null check(length(reason) between 1 and 500),
