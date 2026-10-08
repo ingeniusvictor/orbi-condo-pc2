@@ -3,6 +3,8 @@ import {useEffect,useMemo,useState} from "react";
 import {AnimatePresence,motion} from "framer-motion";
 import BeforeAfter from "../components/BeforeAfter";
 import MaintenanceAlerts from "../components/MaintenanceAlerts";
+import CondoGovernance from "../components/CondoGovernance";
+import CommunityVoice from "../components/CommunityVoice";
 import CertificationIcon from "../components/CertificationIcon";
 import CommunityMap from "../components/CommunityMap";
 import PocketExperience from "../components/PocketExperience";
@@ -52,6 +54,8 @@ export default function Home(){
  
  <BeforeAfter/>
  <MaintenanceAlerts/>
+ <CondoGovernance/>
+ <CommunityVoice/>
  
  <section className="intro" id="maintenance"><p className="eyebrow">MANTENIMIENTO, SIN COMPLICACIONES</p><div className="split"><h2>Entiende tu edificio<br/>de un vistazo.</h2><p>De una planilla técnica a una experiencia visual. Cada sistema tiene su frecuencia y responsable claramente identificado. Toca una tarjeta para abrir su ficha.</p></div><div className="filters" role="group" aria-label="Filtrar mantenciones">{filters.map(x=><button key={x} onClick={()=>setFilter(x)} className={filter===x?"active":""} aria-pressed={filter===x}>{x}</button>)}</div></section>
  
