@@ -10,6 +10,7 @@ import PayAdminPreview from "../components/PayAdminPreview";
 import OrbiEvidence from "../components/OrbiEvidence";
 import ApartmentExplorer from "../components/ApartmentExplorer";
 import HuellaCommercialInfo from "../components/HuellaCommercialInfo";
+import TechnicalLibrary from "../components/TechnicalLibrary";
 import EvidenceHistory from "../components/EvidenceHistory";
 import EvidenceWorkflowDemo from "../components/EvidenceWorkflowDemo";
 import CertificationIcon from "../components/CertificationIcon";
@@ -77,6 +78,7 @@ export default function Home(){
  
  <ApartmentExplorer/>
  <HuellaCommercialInfo/>
+ <TechnicalLibrary/>
  <CommunityMap/>
  <PocketExperience/>
  
