@@ -1,6 +1,7 @@
 import {NextResponse} from "next/server";
-import {backendConfig,configured} from "../../../../lib/server/finance-auth";
+import {backendConfig,configured,trustedOrigin} from "../../../../lib/server/finance-auth";
 export async function POST(req:Request){
+ if(!trustedOrigin(req))return NextResponse.json({error:"Origen no autorizado"},{status:403});
  if(!configured)return NextResponse.json({error:"Autenticación aún no configurada"},{status:503});
  let body:{email?:unknown;password?:unknown};
  try{body=await req.json()}catch{return NextResponse.json({error:"Solicitud inválida"},{status:400})}
