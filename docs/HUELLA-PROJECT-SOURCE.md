@@ -1,0 +1,5 @@
+# Parque Ciudadano II — ficha comercial Inmobiliaria Huella
+Fuente: https://web.ihuella.cl/proyectos/rancagua/parque-ciudadano-2/ . Se documentan cinco tipologías comerciales C1, C2, C3, C4a y C5, con totales, interiores y terrazas. Mantener los valores de plano arquitectónico de mayo de 2019 por separado: no son intercambiables. C4a y C5 todavía carecen de planos arquitectónicos aportados por la comunidad.
+La ficha ofrece enlaces «Ver planta» para las cinco tipologías y secciones Piloto, Galería, Equipamiento. Por ahora enlazar la ficha oficial y no descargar/republicar sus fotografías o plantas comerciales sin permiso del titular.
+El equipamiento citado es material de promoción, no verificación del estado actual. Precios, garantías, DS19 y condiciones de financiamiento son contenido comercial histórico o condicionado y no se presentan como información actual ni como asesoría legal.
+Registrar fuentes, versiones y autorización de reutilización de activos antes de incorporar nuevos documentos o fotografías.
