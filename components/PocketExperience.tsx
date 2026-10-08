@@ -16,7 +16,7 @@ export default function PocketExperience(){
        <div className="phoneBezel">
          <div className="phoneIsland"/>
          <div className="phoneScreen">
-           <div className="mobileTop"><span>O</span><div><small>ORBI CONDO</small><b>{community.name}</b></div><i/></div>
+           <div className="mobileTop"><span>O</span><div><small>ORBI LIVING</small><b>{community.name}</b></div><i/></div>
            <div className="mobileHero"><small>MI COMUNIDAD</small><strong>Todo lo esencial,<br/>en una mirada.</strong><p>{community.city} · {community.housingCount} viviendas</p></div>
            <div className="mobileQuick"><article><span>09</span><small>Sistemas</small></article><article><span>04</span><small>Certificaciones</small></article></div>
            <div className="mobileSectionTitle"><b>Mantención</b><span>Ver todo</span></div>
