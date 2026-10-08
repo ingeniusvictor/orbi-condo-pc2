@@ -4,6 +4,12 @@ const url=process.env.SUPABASE_URL;
 const key=process.env.SUPABASE_ANON_KEY;
 export const configured=Boolean(url&&key);
 export type Role="administrator"|"committee"|"resident";
+/** Reject cross-site cookie-authenticated writes, including form submissions. */
+export function trustedOrigin(req:Request){
+ const origin=req.headers.get("origin");
+ const expected=new URL(req.url).origin;
+ return origin===expected;
+}
 export type Identity={id:string;role:Role;accessToken:string};
 export function backendConfig(){if(!url||!key)throw new Error("Backend no configurado");return {url,key}}
 export async function authenticate():Promise<Identity|null>{
