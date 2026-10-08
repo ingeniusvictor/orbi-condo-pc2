@@ -7,6 +7,7 @@ import CondoGovernance from "../components/CondoGovernance";
 import CommunityVoice from "../components/CommunityVoice";
 import OrbiPay from "../components/OrbiPay";
 import PayAdminPreview from "../components/PayAdminPreview";
+import OrbiEvidence from "../components/OrbiEvidence";
 import CertificationIcon from "../components/CertificationIcon";
 import CommunityMap from "../components/CommunityMap";
 import PocketExperience from "../components/PocketExperience";
@@ -76,5 +77,5 @@ export default function Home(){
  <footer><span>Concept experience · {community.name}</span><span>Powered by ORBI Ecosystem · 2026</span></footer>
  
  <AnimatePresence>{active&&<motion.div className="drawerBackdrop" initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}} onClick={()=>setSelected(null)}><motion.aside className="assetDrawer" role="dialog" aria-modal="true" aria-labelledby="asset-drawer-title" initial={{x:"100%"}} animate={{x:0}} exit={{x:"100%"}} transition={{type:"spring",damping:28,stiffness:240}} onClick={e=>e.stopPropagation()}><button className="drawerClose" onClick={()=>setSelected(null)} aria-label="Cerrar ficha">×</button><div className="drawerVisual"><span><SystemIcon name={active.name} size={72}/></span><i/><i/></div><p className="eyebrow">FICHA DE SISTEMA</p><h2 id="asset-drawer-title">{active.name}</h2><span className={"badge "+label[active.status][1]}>{label[active.status][0]}</span><div className="drawerData"><div><small>Frecuencia</small><b>{active.frequency}</b></div><div><small>Responsable</small><b>{active.provider}</b></div><div><small>Función</small><b>{active.note}</b></div></div><p className="drawerNote">Esta ficha crecerá con historial, informes, evidencias, contratos y documentos del activo cuando la comunidad habilite esos módulos.</p></motion.aside></motion.div>}</AnimatePresence>
- <OrbiPay/><PayAdminPreview/></main>
+ <OrbiEvidence/><OrbiPay/><PayAdminPreview/></main>
 }
