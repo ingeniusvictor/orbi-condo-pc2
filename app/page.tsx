@@ -13,6 +13,7 @@ import HuellaCommercialInfo from "../components/HuellaCommercialInfo";
 import TechnicalLibrary from "../components/TechnicalLibrary";
 import OrbiFinance from "../components/OrbiFinance";
 import FinanceImportPreview from "../components/FinanceImportPreview";
+import WorkforceOverview from "../components/WorkforceOverview";
 import EvidenceHistory from "../components/EvidenceHistory";
 import EvidenceWorkflowDemo from "../components/EvidenceWorkflowDemo";
 import CertificationIcon from "../components/CertificationIcon";
@@ -83,6 +84,7 @@ export default function Home(){
  <TechnicalLibrary/>
  <OrbiFinance/>
  <FinanceImportPreview/>
+ <WorkforceOverview/>
  <CommunityMap/>
  <PocketExperience/>
  
