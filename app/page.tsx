@@ -13,6 +13,7 @@ import HuellaCommercialInfo from "../components/HuellaCommercialInfo";
 import TechnicalLibrary from "../components/TechnicalLibrary";
 import OrbiFinance from "../components/OrbiFinance";
 import FinanceMonthlyComparison from "../components/FinanceMonthlyComparison";
+import FinanceEditWorkspace from "../components/FinanceEditWorkspace";
 import FinanceImportPreview from "../components/FinanceImportPreview";
 import EvidenceHistory from "../components/EvidenceHistory";
 import EvidenceWorkflowDemo from "../components/EvidenceWorkflowDemo";
@@ -84,6 +85,7 @@ export default function Home(){
  <TechnicalLibrary/>
  <OrbiFinance/>
  <FinanceMonthlyComparison/>
+ <FinanceEditWorkspace/>
  <FinanceImportPreview/>
  <CommunityMap/>
  <PocketExperience/>
