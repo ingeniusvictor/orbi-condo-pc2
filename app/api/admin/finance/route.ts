@@ -1,5 +1,5 @@
 import {NextResponse} from "next/server";
-import {authenticate,configured,dbFetch} from "../../../../lib/server/finance-auth";
+import {authenticate,configured,dbFetch,trustedOrigin} from "../../../../lib/server/finance-auth";
 type Draft={period:string;description:string;amount_clp:number;reason:string};
 const invalid=(d:Draft)=>!/^\d{4}-(0[1-9]|1[0-2])$/.test(d.period)||!d.description.trim()||d.description.length>160||!Number.isSafeInteger(d.amount_clp)||!d.reason.trim()||d.reason.length>500;
 export async function GET(){
@@ -11,6 +11,7 @@ export async function GET(){
  return NextResponse.json({rows:await result.json()},{headers:{"Cache-Control":"no-store"}});
 }
 export async function POST(req:Request){
+ if(!trustedOrigin(req))return NextResponse.json({error:"Origen no autorizado"},{status:403});
  if(!configured)return NextResponse.json({error:"Base de datos pendiente de configurar"},{status:503});
  const identity=await authenticate();
  if(!identity||identity.role!=="administrator")return NextResponse.json({error:"Acceso denegado"},{status:403});
