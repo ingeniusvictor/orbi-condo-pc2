@@ -1,0 +1,7 @@
+# Biblioteca Técnica — política inicial
+El catálogo en data/technical-library.ts es un inventario curado de fuentes y faltantes, no un repositorio de archivos originales ni una plataforma de carga.
+Campos obligatorios: id, título, categoría, fuente, fecha, versión, estado de verificación, nivel de acceso, descripción y formato. URL solo para fuente externa pública.
+Estados: Fuente identificada; Referencial · validar; Pendiente de documento; Validado por administración. Este último requiere comprobación real de la administración: no asignarlo automáticamente.
+Clasificar como restringidos los planos de seguridad, infraestructura crítica, redes, accesos, datos de residentes, actas con datos personales y archivos sin autorización de republicación.
+La lámina de 2019 recibida por el usuario se representa como registro documental, pero no se sube a un sitio público. Las superficies extraídas están en el catálogo de tipologías y deben contrastarse con planos as-built. Los archivos comerciales de Huella y Matterport se enlazan a sus fuentes originales.
+Futura ingesta: registrar emisor, fecha, revisión, identificador, categoría, alcance, tipología/activo asociado, nivel de acceso, consentimiento o licencia, huella SHA-256, fecha de revisión y aprobador. Guardar binarios en almacenamiento privado con acceso autenticado y registros de auditoría. No activar subida pública hasta disponer de backend y control de roles.
