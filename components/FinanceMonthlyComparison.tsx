@@ -31,3 +31,4 @@ export default function FinanceMonthlyComparison(){
   </div>}
   <p style={{marginTop:20,fontSize:12,color:"#afcbd2"}}>Fuentes: Comunidad Feliz, liquidación agosto 2026 (página 2) y detalle de egresos septiembre 2026 (páginas 1–3). No se publican identificadores de unidades ni datos personales.</p>
  </section>
+}
