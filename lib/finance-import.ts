@@ -4,12 +4,12 @@ export type ImportCandidate = Pick<LedgerEntry,"description"|"supplierDisplayNam
 export type ImportIssue = {row:number;reason:string};
 export type ImportPreview = {period:string;statedTotalClp:number;rows:ImportCandidate[];issues:ImportIssue[];computedTotalClp:number;differenceClp:number;balanced:boolean};
 const categories=new Set(["staff","administration","utilities","maintenance","repairs","supplies","projects","legal","other"]);
-const dateValid=(value:string|null)=>value===null||(/^\\d{4}-\\d{2}-\\d{2}$/.test(value)&&!Number.isNaN(Date.parse(value+"T00:00:00Z"))&&new Date(value+"T00:00:00Z").toISOString().slice(0,10)===value);
+const dateValid=(value:string|null)=>value===null||(/^\d{4}-\d{2}-\d{2}$/.test(value)&&!Number.isNaN(Date.parse(value+"T00:00:00Z"))&&new Date(value+"T00:00:00Z").toISOString().slice(0,10)===value);
 export function parseFinanceCsv(csv:string,period:string,statedTotalClp:number):ImportPreview{
  const issues:ImportIssue[]=[];const rows:ImportCandidate[]=[];
- if(!/^\\d{4}-(0[1-9]|1[0-2])$/.test(period))issues.push({row:0,reason:"Período inválido (AAAA-MM)"});
+ if(!/^\d{4}-(0[1-9]|1[0-2])$/.test(period))issues.push({row:0,reason:"Período inválido (AAAA-MM)"});
  if(!Number.isSafeInteger(statedTotalClp)||statedTotalClp<0)issues.push({row:0,reason:"Total declarado inválido"});
- const lines=csv.replace(/^\\uFEFF/,"").split(/\\r?\\n/).filter(x=>x.trim());
+ const lines=csv.replace(/^\uFEFF/,"").split(/\r?\n/).filter(x=>x.trim());
  const expected="descripcion;proveedor;monto_clp;fecha_pago;numero_documento;categoria;pagina";
  if(lines[0]?.trim().toLowerCase()!==expected)issues.push({row:1,reason:"Encabezado CSV incorrecto"});
  for(let i=1;i<lines.length;i++){
@@ -27,4 +27,4 @@ export function parseFinanceCsv(csv:string,period:string,statedTotalClp:number):
  const computedTotalClp=rows.reduce((n,r)=>n+r.amountClp,0);
  return {period,statedTotalClp,rows,issues,computedTotalClp,differenceClp:computedTotalClp-statedTotalClp,balanced:issues.length===0&&computedTotalClp===statedTotalClp};
 }
-export const financeCsvTemplate="descripcion;proveedor;monto_clp;fecha_pago;numero_documento;categoria;pagina\\nMantención ascensores;Proveedor ejemplo;100000;2026-09-30;F-001;maintenance;2\\nDevolución;Proveedor ejemplo;-20000;2026-10-01;;maintenance;2";
+export const financeCsvTemplate="descripcion;proveedor;monto_clp;fecha_pago;numero_documento;categoria;pagina\nMantención ascensores;Proveedor ejemplo;100000;2026-09-30;F-001;maintenance;2\nDevolución;Proveedor ejemplo;-20000;2026-10-01;;maintenance;2";
