@@ -9,6 +9,7 @@ import OrbiPay from "../components/OrbiPay";
 import PayAdminPreview from "../components/PayAdminPreview";
 import OrbiEvidence from "../components/OrbiEvidence";
 import ApartmentExplorer from "../components/ApartmentExplorer";
+import HuellaCommercialInfo from "../components/HuellaCommercialInfo";
 import EvidenceHistory from "../components/EvidenceHistory";
 import EvidenceWorkflowDemo from "../components/EvidenceWorkflowDemo";
 import CertificationIcon from "../components/CertificationIcon";
@@ -75,6 +76,7 @@ export default function Home(){
  <section className="security"><div><p className="eyebrow">SEGURIDAD & CERTIFICACIONES</p><h2>Lo importante,<br/>siempre visible.</h2><p className="securityLead">El calendario original reúne obligaciones anuales y referencias de seguimiento. ORBI LIVING las presenta con claridad sin convertirlas en un estado operativo en tiempo real.</p><span className="securitySource">FUENTE · CALENDARIO ORIGINAL PC2</span></div><div className="certColumn"><div className="certs">{community.certifications.map((c,i)=><article key={c.name}><span className="certIcon"><CertificationIcon name={c.name}/></span><div><small>{c.frequency}</small><h3>{c.name}</h3><p>{c.state}</p></div><b>0{i+1}</b></article>)}</div><p className="securityNote">Los textos de referencia se conservan tal como aparecen en el calendario suministrado. Su vigencia debe validarse con la documentación actual de la comunidad.</p></div></section>
  
  <ApartmentExplorer/>
+ <HuellaCommercialInfo/>
  <CommunityMap/>
  <PocketExperience/>
  
