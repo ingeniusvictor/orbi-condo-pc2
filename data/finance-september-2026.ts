@@ -22,7 +22,7 @@ export const september2026Finance = {
     {name:"Gastos legales",amount:50000}
   ],
   supplierCosts: [
-    {name:"Atlagich Ascensores",amount:2416185,system:"Ascensores",detail:"Mantención, baterías y normalización"},
+    {name:"Atlagich Ascensores",amount:2415545,system:"Ascensores",detail:"Mantención, baterías y normalización"},
     {name:"CGE Distribución",amount:1945000,system:"Electricidad"},
     {name:"Becza Gestión Ltda.",amount:1129781,system:"Administración"},
     {name:"Distribuidora Zion",amount:493842,system:"Limpieza"},
