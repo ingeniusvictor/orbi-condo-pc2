@@ -12,3 +12,4 @@ Formulario de validación local de orden, contratista, especialidad, equipo, fec
 8. Vincular historial a calendario de mantenciones, certificaciones, proveedor, activo y vencimientos.
 ## Seguridad
 No exponer fotos/informes a usuarios no autorizados. No permitir que una invitación de contratista modifique proveedores, contratos, fechas oficiales ni estados de aceptación.
+\n## Política obligatoria de evidencia fotográfica\nTodo mantenimiento preventivo, correctivo o por requerimiento debe incluir fotografías que permitan reconocer la instalación intervenida, la ejecución y el resultado. Los informes, actas y certificados complementan pero nunca sustituyen las fotografías. Solicitar antes, durante y después cuando corresponda. Una entrega con solo PDF queda pendiente de antecedentes y no puede aceptarse como expediente completo. En producción, esta validación se aplica obligatoriamente en el servidor antes de permitir la aceptación administrativa.\n
