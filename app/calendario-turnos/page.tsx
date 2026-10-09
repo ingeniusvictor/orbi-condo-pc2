@@ -21,8 +21,9 @@ export default function CalendarTurnos(){
   const key=shiftKey(date,slotId);
   const base=overrides[key]??{role:slots.find(s=>s.id===slotId)?.defaultRole??null,status:"planned" as ShiftStatus,note:"",updatedAt:""};
   const next={...base,...patch,updatedAt:new Date().toISOString()};
+  if(next.status==="vacant")next.role=null;
   if(next.role===null&&next.status!=="vacant")next.status="vacant";
-  if(next.role!==null&&next.status==="vacant")next.status="planned";
+  
   setOverrides(prev=>({...prev,[key]:next}));
  };
  const count=slots.filter(s=>(overrides[shiftKey(date,s.id)]?.status==="vacant"||overrides[shiftKey(date,s.id)]?.role===null)).length;
@@ -34,9 +35,9 @@ export default function CalendarTurnos(){
  <p style={{...panel,background:"#262c30",borderColor:"#8c7754",fontSize:14}}>Demo sin autenticación: utiliza solo puestos genéricos. Los cambios se guardan en este navegador, no en un servidor y no se comparten con otros usuarios. No ingresar nombres, teléfonos ni información privada. El turno nocturno especial 20:00–08:00 se infiere de la cobertura de 24 h y está pendiente de validación.</p>
  <section style={{...panel,marginTop:18}}>
  <div style={{display:"flex",alignItems:"end",flexWrap:"wrap",gap:12}}>
- <button onClick={()=>setDate(moveDate(date,-1))} style={{...inputStyle,width:"auto",cursor:"pointer"}} aria-label="Día anterior">←</button>
+ <button disabled={date<="2026-01-01"} onClick={()=>setDate(moveDate(date,-1))} style={{...inputStyle,width:"auto",cursor:"pointer"}} aria-label="Día anterior">←</button>
  <label style={{flex:"1 1 220px",fontSize:13,color:"#b9d4df"}}>Fecha de servicio<input type="date" value={date} min="2026-01-01" max="2026-12-31" onChange={e=>{if(isISODate(e.target.value))setDate(e.target.value);}} style={{...inputStyle,marginTop:7}}/></label>
- <button onClick={()=>setDate(moveDate(date,1))} style={{...inputStyle,width:"auto",cursor:"pointer"}} aria-label="Día siguiente">→</button>
+ <button disabled={date>="2026-12-31"} onClick={()=>setDate(moveDate(date,1))} style={{...inputStyle,width:"auto",cursor:"pointer"}} aria-label="Día siguiente">→</button>
  <button onClick={()=>setDate(localDateISO(new Date()))} style={{...inputStyle,width:"auto",cursor:"pointer"}}>Hoy</button>
  </div>
  <div style={{display:"flex",gap:10,flexWrap:"wrap",marginTop:16}}>
