@@ -13,7 +13,7 @@ export default function TurnosDemo(){
  const total=Object.keys(changes).length;
  return <main style={{minHeight:"100vh",background:"radial-gradient(ellipse at top right,#174056,#071320 60%)",color:"#effaff",padding:"clamp(16px,4vw,56px)",fontFamily:"system-ui,sans-serif"}}>
  <div style={{maxWidth:1140,margin:"auto"}}>
- <a href="/operaciones-demo" style={{color:"#77e8e5"}}>← ORBI Operaciones</a>
+ <a href="/operaciones-demo" style={{color:"#77e8e5"}}>← ORBI Operaciones</a><span style={{margin:"0 12px",color:"#567"}}>·</span><a href="/calendario-turnos" style={{color:"#77e8e5"}}>Abrir calendario por fecha →</a>
  <header style={{marginTop:30,display:"flex",justifyContent:"space-between",alignItems:"start",gap:16,flexWrap:"wrap"}}><div><p style={{letterSpacing:3,color:"#70dfdd",fontSize:12}}>ORBI LIVING · PERSONAL</p><h1 style={{fontSize:"clamp(32px,5vw,56px)",margin:"8px 0"}}>Centro de turnos<span style={{color:"#70dfdd"}}>.</span></h1><p style={{color:"#a8c0ce"}}>Calendario editable de asignaciones y reemplazos · Parque Ciudadano II</p></div><span style={{border:"1px solid #397782",padding:"10px 14px",borderRadius:30,color:"#7ae6e1",fontSize:12}}>DEMO CON DATOS FICTICIOS</span></header>
  <p role="note" style={{...card,borderColor:"#987d4e",background:"#2a2a29",fontSize:14}}>La distribución de personas es ilustrativa, no una nómina real. Los horarios de mañana, tarde, noche y apoyo corresponden a información reportada, pendiente de validación. No ingreses nombres ni datos reales en esta demostración pública. Los puestos genéricos son identificadores de planificación. Los cambios se pierden al recargar.</p>
  <section style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(200px,1fr))",gap:12,margin:"20px 0"}}>
