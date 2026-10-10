@@ -53,23 +53,27 @@ create table if not exists public.shift_assignments(
  created_at timestamptz not null default now(),
  updated_at timestamptz not null default now(),
  unique(community_id,service_date,slot_code),
+ unique(community_id,id),
  foreign key(community_id,assignee_staff_id) references public.staff_private(community_id,id),
  check(ends_at>starts_at)
 );
 
 create table if not exists public.shift_events(
  id bigint generated always as identity primary key,
- shift_assignment_id uuid not null references public.shift_assignments(id) on delete restrict,
+ shift_assignment_id uuid not null,
  community_id text not null references public.communities(id) on delete restrict,
  event_type text not null check(event_type in ('created','gap_reported','replacement_requested','assignee_changed','replacement_confirmed','handoff_received','corrected')),
  from_status text check(from_status is null or from_status in ('planned','vacant','requested','confirmed','received')),
  to_status text check(to_status is null or to_status in ('planned','vacant','requested','confirmed','received')),
- from_assignee_staff_id uuid references public.staff_private(id),
- to_assignee_staff_id uuid references public.staff_private(id),
+ from_assignee_staff_id uuid,
+ to_assignee_staff_id uuid,
  reason_code text,
  note_private text check(note_private is null or length(note_private)<=1000),
  actor_user_id uuid not null references auth.users(id),
- created_at timestamptz not null default now()
+ created_at timestamptz not null default now(),
+ foreign key(community_id,shift_assignment_id) references public.shift_assignments(community_id,id) on delete restrict,
+ foreign key(community_id,from_assignee_staff_id) references public.staff_private(community_id,id),
+ foreign key(community_id,to_assignee_staff_id) references public.staff_private(community_id,id)
 );
 
 create table if not exists public.incidents(
@@ -85,12 +89,13 @@ create table if not exists public.incidents(
  created_by uuid not null references auth.users(id),
  updated_by uuid not null references auth.users(id),
  created_at timestamptz not null default now(),
- updated_at timestamptz not null default now()
+ updated_at timestamptz not null default now(),
+ unique(community_id,id)
 );
 
 create table if not exists public.incident_events(
  id bigint generated always as identity primary key,
- incident_id uuid not null references public.incidents(id) on delete restrict,
+ incident_id uuid not null,
  community_id text not null references public.communities(id) on delete restrict,
  event_type text not null check(event_type in ('created','acknowledged','assigned','state_changed','priority_changed','escalated','resolved','reopened','closed')),
  from_state text check(from_state is null or from_state in ('reported','acknowledged','assigned','in_progress','resolved','closed')),
@@ -98,7 +103,8 @@ create table if not exists public.incident_events(
  from_priority text check(from_priority is null or from_priority in ('low','medium','high','critical')),
  to_priority text check(to_priority is null or to_priority in ('low','medium','high','critical')),
  actor_user_id uuid not null references auth.users(id),
- created_at timestamptz not null default now()
+ created_at timestamptz not null default now(),
+ foreign key(community_id,incident_id) references public.incidents(community_id,id) on delete restrict
 );
 
 create table if not exists public.audit_events(
@@ -303,6 +309,7 @@ create policy audit_events_admin_select on public.audit_events
 
 -- No DELETE grants are issued for operational or audit/history tables.
 -- Domain event INSERTs are intentionally withheld until P1C adds controlled RPC/server commands.
+-- Composite FKs keep event/community references from crossing tenant boundaries.
 -- The committee role may read current shift assignments but not private staff/event/audit rows.
 
 commit;
