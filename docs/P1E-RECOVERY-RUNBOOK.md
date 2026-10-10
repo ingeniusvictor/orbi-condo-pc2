@@ -29,6 +29,8 @@ supabase db dump --db-url "$env:SUPABASE_DB_URL" -f data.sql --use-copy --data-o
 
 The repository includes `scripts/backup-supabase-logical.ps1` to run the equivalent export into a timestamped local directory and generate SHA-256 hashes. The script never accepts a database password as a command-line argument and never prints the connection string.
 
+For the zero-cost Windows path, a global Supabase CLI install is **not required**. The backup helper uses a global `supabase` command when present; otherwise it falls back to `npx --yes supabase@latest`. This keeps the working tree clean and avoids requiring a machine-wide install. Supabase currently requires Node.js 20+ for the npm/npx path.
+
 ## Credential handling
 - Obtain the Session Pooler connection string from Supabase **Connect** when a real backup is performed.
 - Put the connection string only in the process environment as `SUPABASE_DB_URL`.
