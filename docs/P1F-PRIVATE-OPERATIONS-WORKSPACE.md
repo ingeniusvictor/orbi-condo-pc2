@@ -50,14 +50,22 @@ P1F puede mostrar `display_name` de `staff_private` únicamente dentro de la con
 
 No agregar datos reales mientras el `PRODUCTION-READINESS-GATE` siga abierto.
 
+## Evidencia obtenida en staging
+- login Auth sintético de Administración confirmado desde la UI;
+- `/api/auth/session` resuelve `pc2` y rol `administrator` después del login;
+- dashboard privado carga bajo RLS y muestra incidencias visibles;
+- se cargó una jornada sintética de prueba para `2026-10-10` con estados `planned`, `vacant`, `requested` y `confirmed`;
+- el catálogo de cobertura mantiene únicamente personal sintético;
+- la navegación flotante pública se excluye de `/operaciones` para no tapar controles de la consola privada.
+
 ## Qué NO se cierra con P1F
 Aunque el cableado de UI exista, los siguientes gates permanecen pendientes hasta tener evidencia real:
-- login → session → refresh → logout con cuenta Auth sintética soportada;
+- refresh → continuidad de sesión → logout probado end-to-end;
 - `409` HTTP probado end-to-end con dos operaciones concurrentes autenticadas;
 - rate limiting / abuso de login;
 - MFA y política de contraseña de producción;
 - backup lógico exitoso + restore independiente + smoke RLS;
-- QA visual responsive manual;
+- QA visual responsive manual completo;
 - procedimiento operativo PC2 validado;
 - infraestructura Supabase de producción.
 
