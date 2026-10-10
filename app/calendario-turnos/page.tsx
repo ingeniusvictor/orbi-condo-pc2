@@ -17,7 +17,7 @@ export default function CalendarTurnos(){
  useEffect(()=>{if(ready)try{window.localStorage.setItem(storageKey,JSON.stringify(overrides));}catch{}},[overrides,ready]);
  const slots=useMemo(()=>isISODate(date)?shiftSlotsForDate(date):[],[date]);
  const special=isSpecialDate(date),holiday=NATIONAL_HOLIDAYS_2026[date];
- const effectiveRole=(slotId:string,defaultRole:ShiftRole):ShiftRole|null=>{const x=overrides[shiftKey(date,slotId)];return x?x.role:defaultRole;};
+ const effectiveRole=(slotId:string,defaultRole:ShiftRole|null):ShiftRole|null=>{const x=overrides[shiftKey(date,slotId)];return x?x.role:defaultRole;};
  const duplicateRoles=useMemo(()=>{
   const counts=new Map<ShiftRole,number>();
   for(const slot of slots){const role=effectiveRole(slot.id,slot.defaultRole);if(role)counts.set(role,(counts.get(role)??0)+1);}
@@ -31,13 +31,14 @@ export default function CalendarTurnos(){
   if(next.role===null&&next.status!=="vacant")next.status="vacant";
   setOverrides(prev=>({...prev,[key]:next}));
  };
- const count=slots.filter(s=>(overrides[shiftKey(date,s.id)]?.status==="vacant"||overrides[shiftKey(date,s.id)]?.role===null)).length;
+ const count=slots.filter(s=>{const x=overrides[shiftKey(date,s.id)];return Boolean(x&&(x.status==="vacant"||x.role===null));}).length;
  const requestCount=slots.filter(s=>overrides[shiftKey(date,s.id)]?.status==="requested").length;
+ const unresolvedCount=slots.filter(s=>s.validation==="inferred_unverified"&&!overrides[shiftKey(date,s.id)]).length;
  return <main style={{minHeight:"100vh",background:"radial-gradient(ellipse at top right,#16495a,#061321 65%)",color:"#eafcff",fontFamily:"system-ui,sans-serif",padding:"clamp(16px,4vw,50px)"}}>
  <div style={{maxWidth:1120,margin:"auto"}}>
  <nav style={{display:"flex",gap:14,flexWrap:"wrap"}}><a href="/turnos-planificador" style={{color:"#80e9e5"}}>← Planificador semanal</a><a href="/panel-operativo" style={{color:"#80e9e5"}}>Panel operativo</a><a href="/emergencias-demo" style={{color:"#80e9e5"}}>Incidencias</a></nav>
  <header style={{display:"flex",justifyContent:"space-between",gap:18,alignItems:"start",flexWrap:"wrap",margin:"25px 0"}}><div><p style={{letterSpacing:3,color:"#79dfe2",fontSize:12}}>ORBI LIVING · COBERTURA OPERATIVA</p><h1 style={{fontSize:"clamp(32px,5vw,52px)",margin:"6px 0"}}>Calendario de turnos<span style={{color:"#6de4df"}}>.</span></h1><p style={{color:"#a7c2d1"}}>Asignaciones, vacantes y suplencias por fecha · Parque Ciudadano II</p></div><span style={{padding:"9px 13px",border:"1px solid #467986",borderRadius:25,color:"#8ae5e2",fontSize:12}}>PROTOTIPO LOCAL · SIN DATOS PERSONALES</span></header>
- <p style={{...panel,background:"#262c30",borderColor:"#8c7754",fontSize:14}}>Demo sin autenticación: utiliza solo puestos genéricos. Los cambios se guardan en este navegador, no en un servidor y no se comparten con otros usuarios. No ingresar nombres, teléfonos ni información privada. El turno nocturno especial 20:00–08:00 se infiere de la cobertura de 24 h y está pendiente de validación.</p>
+ <p style={{...panel,background:"#262c30",borderColor:"#8c7754",fontSize:14}}>Demo sin autenticación: utiliza solo puestos genéricos. Los cambios se guardan en este navegador, no en un servidor y no se comparten con otros usuarios. No ingresar nombres, teléfonos ni información privada. En domingos y feriados solo se ha reportado la franja part-time 08:00–20:00; la franja complementaria 20:00–08:00 se mantiene únicamente como recordatorio de validación y no presume quién la cubre.</p>
  <section style={{...panel,marginTop:18}}>
  <div style={{display:"flex",alignItems:"end",flexWrap:"wrap",gap:12}}>
  <button disabled={date<="2026-01-01"} onClick={()=>setDate(moveDate(date,-1))} style={{...inputStyle,width:"auto",cursor:"pointer"}} aria-label="Día anterior">←</button>
@@ -47,21 +48,23 @@ export default function CalendarTurnos(){
  </div>
  <div style={{display:"flex",gap:10,flexWrap:"wrap",marginTop:16}}>
  <span style={{background:special?"#29495b":"#173b42",padding:"7px 12px",borderRadius:25,color:"#c4f5ee",fontSize:12}}>{holiday?"Feriado · "+holiday:special?"Domingo · cobertura especial":"Jornada habitual"}</span>
- <span style={{background:count?"#63353b":"#1a4147",padding:"7px 12px",borderRadius:25,fontSize:12}}>{count} vacantes</span>
+ <span style={{background:count?"#63353b":"#1a4147",padding:"7px 12px",borderRadius:25,fontSize:12}}>{count} vacantes confirmadas</span>
  <span style={{background:requestCount?"#625038":"#1a4147",padding:"7px 12px",borderRadius:25,fontSize:12}}>{requestCount} reemplazos pendientes</span>
+ {unresolvedCount>0&&<span style={{background:"#5a4b2b",padding:"7px 12px",borderRadius:25,fontSize:12}}>{unresolvedCount} franja pendiente de validar</span>}
  {duplicateRoles.size>0&&<span style={{background:"#633f3a",padding:"7px 12px",borderRadius:25,fontSize:12}}>{duplicateRoles.size} asignación duplicada · revisar</span>}
  </div>
  </section>
- <section style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(260px,1fr))",gap:14,marginTop:18}}>
- {slots.map(s=>{const key=shiftKey(date,s.id),override=overrides[key],role=override?override.role:s.defaultRole,status=override?.status??"planned",duplicate=Boolean(role&&duplicateRoles.has(role));return <article key={key} style={{...panel,borderColor:status==="vacant"?"#bc6269":duplicate?"#b8795a":status==="requested"?"#ac8b4e":"#34586c"}}>
- <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:8}}><strong style={{fontSize:19}}>{s.label}</strong><span style={{fontSize:11,color:statusColors[status],fontWeight:700}}>{statusLabels[status].toUpperCase()}</span></div>
+ <section style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(min(100%,260px),1fr))",gap:14,marginTop:18}}>
+ {slots.map(s=>{const key=shiftKey(date,s.id),override=overrides[key],role=override?override.role:s.defaultRole,status=override?.status??"planned",duplicate=Boolean(role&&duplicateRoles.has(role)),unverified=s.validation==="inferred_unverified"&&!override;return <article key={key} style={{...panel,minWidth:0,borderColor:unverified?"#9b7d47":status==="vacant"?"#bc6269":duplicate?"#b8795a":status==="requested"?"#ac8b4e":"#34586c"}}>
+ <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:8,flexWrap:"wrap"}}><strong style={{fontSize:19}}>{s.label}</strong><span style={{fontSize:11,color:unverified?"#ffd18a":statusColors[status],fontWeight:700}}>{unverified?"PENDIENTE DE VALIDACIÓN":statusLabels[status].toUpperCase()}</span></div>
  <p style={{fontSize:23,fontWeight:750,margin:"12px 0"}}>{s.start}–{s.end}{s.nextDay?" +1 día":""}</p>
- <p style={{fontSize:12,color:"#a7c3d0"}}>Asignación habitual: {ROLE_LABELS[s.defaultRole]}</p>
+ <p style={{fontSize:12,color:"#a7c3d0"}}>Asignación habitual: {s.defaultRole?ROLE_LABELS[s.defaultRole]:"No confirmada"}</p>
+ {unverified&&<p role="status" style={{fontSize:12,color:"#ffe0a6",background:"#3c3426",padding:9,borderRadius:8,lineHeight:1.5}}>Esta franja existe en la demo para visualizar la pregunta operacional pendiente. No significa que Part-time 2, un conserje fijo u otra persona la cubra realmente.</p>}
  {duplicate&&<p role="status" style={{fontSize:12,color:"#ffc19e",background:"#3b2926",padding:9,borderRadius:8}}>Este mismo puesto genérico figura en más de un turno de la fecha. Puede ser intencional, pero conviene revisar la cobertura.</p>}
- <label style={{display:"block",fontSize:13,marginTop:18}}>Asignación efectiva<select style={{...inputStyle,marginTop:7}} value={role??""} onChange={e=>setField(s.id,{role:e.target.value?e.target.value as ShiftRole:null,status:e.target.value?"planned":"vacant"})}><option value="">Vacante · sin responsable</option>{Object.entries(ROLE_LABELS).map(([id,name])=><option key={id} value={id}>{name}</option>)}</select></label>
+ <label style={{display:"block",fontSize:13,marginTop:18}}>Asignación efectiva<select style={{...inputStyle,marginTop:7}} value={role??""} onChange={e=>setField(s.id,{role:e.target.value?e.target.value as ShiftRole:null,status:e.target.value?"planned":"vacant"})}><option value="">{unverified?"Pendiente de validación":"Vacante · sin responsable"}</option>{Object.entries(ROLE_LABELS).map(([id,name])=><option key={id} value={id}>{name}</option>)}</select></label>
  <label style={{display:"block",fontSize:13,marginTop:13}}>Estado<select style={{...inputStyle,marginTop:7}} value={status} onChange={e=>setField(s.id,{status:e.target.value as ShiftStatus})}><option value="planned">Programado</option><option value="vacant">Vacante</option><option value="requested">Reemplazo solicitado</option><option value="confirmed">Reemplazo confirmado</option><option value="received">Turno recibido</option></select></label>
  <label style={{display:"block",fontSize:13,marginTop:13}}>Nota operativa genérica (opcional)<input maxLength={140} placeholder="Ej.: suplencia pendiente" value={override?.note??""} onChange={e=>setField(s.id,{note:e.target.value})} style={{...inputStyle,marginTop:7}}/></label>
- <button onClick={()=>setOverrides(prev=>{const next={...prev};delete next[key];return next;})} style={{...inputStyle,cursor:"pointer",marginTop:14,background:"#214657"}}>Restablecer turno habitual</button>
+ <button onClick={()=>setOverrides(prev=>{const next={...prev};delete next[key];return next;})} style={{...inputStyle,cursor:"pointer",marginTop:14,background:"#214657"}}>Restablecer referencia</button>
  </article>})}
  </section>
  <section style={{...panel,marginTop:18}}>
