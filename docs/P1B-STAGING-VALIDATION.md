@@ -15,7 +15,7 @@ The P1B operational schema was applied successfully to staging. Follow-up harden
 ### Security hardening discovered in staging
 Supabase Security Advisor initially reported exposed `SECURITY DEFINER` helpers in the `public` schema. They were moved to a non-exposed `private` schema, direct execution was revoked from `anon`, and only the role-resolution helpers retain the minimum `authenticated` execute privilege required by RLS policies.
 
-Database schema/RLS security findings were cleared. Supabase Auth still reports the project-level warning that leaked-password protection is disabled; this must be addressed before real credentials are used.
+Database schema/RLS security findings were cleared. Supabase Auth reports the project-level warning that leaked-password protection is disabled. Supabase documents this protection as a **Pro-plan-and-above** feature, so the current Free staging project cannot use that control. Before real production credentials are provisioned, ORBI must either upgrade and enable it or formally adopt compensating password/MFA controls.
 
 ### Performance hardening discovered in staging
 Initial advisor findings identified missing indexes for several foreign-key paths and row-by-row `auth.uid()` evaluation in three policies. A hardening migration added the relevant indexes and changed those checks to `(select auth.uid())`.
@@ -95,9 +95,12 @@ A synthetic PC2 incident was created by the concierge at revision 1 and then upd
 
 This verifies the current trigger path for server timestamps/revision increment/audit generation under authorized RLS mutations.
 
+## Vercel integration check
+The P1B preview deployment is now connected to this staging project with branch-scoped environment variables. `/api/auth/session` returns HTTP 200 with `configured:true`, `authenticated:false`, null role/community and an empty permission list when no session cookie is present. `Cache-Control: no-store` remains active.
+
 ## Still pending before P1B can be Ready
 1. Test full Supabase Auth password/session flow through the P1A Next.js endpoints using properly provisioned synthetic Auth accounts.
-2. Enable/decide leaked-password protection before real users are provisioned.
+2. Decide production password/MFA controls; leaked-password protection requires Pro or above.
 3. Add controlled P1C commands that create `shift_events` and `incident_events`; keep direct client INSERT denied.
 4. Test optimistic concurrency with stale `revision` values once P1C commands exist.
 5. Document rollback and execute a restore/clone test appropriate to the Free-plan capabilities.
@@ -105,4 +108,4 @@ This verifies the current trigger path for server timestamps/revision increment/
 7. Keep all data synthetic until the private backend gate is complete.
 
 ## Interpretation
-P1B is now **applied and materially RLS-validated in staging**. The core role boundaries, tenant isolation, revision trigger and audit trigger have live evidence. It is still not production-ready: full Auth login, controlled command APIs, concurrency and recovery testing remain open, and no real operational data is enabled.
+P1B is now **applied and materially RLS-validated in staging**. The core role boundaries, tenant isolation, revision trigger and audit trigger have live evidence, and the P1A session endpoint is connected to the staging backend in preview. It is still not production-ready: full Auth login, controlled command APIs, concurrency and recovery testing remain open, and no real operational data is enabled.
