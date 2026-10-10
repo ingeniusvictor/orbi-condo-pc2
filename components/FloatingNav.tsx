@@ -35,6 +35,7 @@ export default function FloatingNav(){
   return ()=>observer.disconnect();
  },[isHome]);
  const go=(target:string)=>document.querySelector(target)?.scrollIntoView({behavior:"smooth",block:"start"});
+ if(pathname==="/operaciones")return null;
  if(!isHome){
   return <><div className="floatingNavSpacer" aria-hidden="true"/><nav className="floatingNav floatingNavOps" aria-label="Navegación operativa">
    <Link className="floatingBrand" href="/" aria-label="Volver a ORBI LIVING"><span>O</span><b>ORBI</b></Link>
