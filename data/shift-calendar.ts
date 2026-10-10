@@ -11,7 +11,7 @@ export const NATIONAL_HOLIDAYS_2026: Readonly<Record<string,string>> = {
 };
 export type ShiftRole="fixed1"|"fixed2"|"fixed3"|"part1"|"part2"|"relief1"|"relief2";
 export type ShiftStatus="planned"|"vacant"|"requested"|"confirmed"|"received";
-export type ShiftSlot={id:string;label:string;start:string;end:string;defaultRole:ShiftRole;nextDay:boolean};
+export type ShiftSlot={id:string;label:string;start:string;end:string;defaultRole:ShiftRole|null;nextDay:boolean;validation:"reported"|"inferred_unverified"};
 export type ShiftOverride={role:ShiftRole|null;status:ShiftStatus;note:string;updatedAt:string};
 export type ShiftOverrideMap=Record<string,ShiftOverride>;
 export const ROLE_LABELS:Record<ShiftRole,string>={
@@ -31,13 +31,13 @@ export function isSpecialDate(date:string):boolean{
 }
 export function shiftSlotsForDate(date:string):ShiftSlot[]{
  if(isSpecialDate(date))return [
- {id:"special-day",label:"Part-time diurno",start:"08:00",end:"20:00",defaultRole:"part1",nextDay:false},
- {id:"special-night",label:"Part-time nocturno",start:"20:00",end:"08:00",defaultRole:"part2",nextDay:true}
+ {id:"special-day",label:"Part-time diurno",start:"08:00",end:"20:00",defaultRole:"part1",nextDay:false,validation:"reported"},
+ {id:"special-night",label:"Cobertura nocturna especial · por validar",start:"20:00",end:"08:00",defaultRole:null,nextDay:true,validation:"inferred_unverified"}
  ];
  return [
- {id:"morning",label:"Mañana",start:"07:00",end:"14:30",defaultRole:"fixed1",nextDay:false},
- {id:"afternoon",label:"Tarde",start:"14:30",end:"22:00",defaultRole:"fixed2",nextDay:false},
- {id:"night",label:"Noche",start:"22:00",end:"07:00",defaultRole:"fixed3",nextDay:true}
+ {id:"morning",label:"Mañana",start:"07:00",end:"14:30",defaultRole:"fixed1",nextDay:false,validation:"reported"},
+ {id:"afternoon",label:"Tarde",start:"14:30",end:"22:00",defaultRole:"fixed2",nextDay:false,validation:"reported"},
+ {id:"night",label:"Noche",start:"22:00",end:"07:00",defaultRole:"fixed3",nextDay:true,validation:"reported"}
  ];
 }
 export const shiftKey=(date:string,id:string)=>date+"|"+id;
