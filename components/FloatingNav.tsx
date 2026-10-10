@@ -10,11 +10,11 @@ const homeItems=[
  {label:"Seguridad",target:".security"}
 ];
 const operationItems=[
- {label:"Panel",href:"/panel-operativo"},
- {label:"Turnos",href:"/calendario-turnos"},
- {label:"Incidencias",href:"/emergencias-demo"},
- {label:"Bitácora",href:"/operaciones-demo"},
- {label:"Admin",href:"/administracion-demo"}
+ {label:"Panel",href:"/panel-operativo",matches:["/panel-operativo"]},
+ {label:"Turnos",href:"/calendario-turnos",matches:["/calendario-turnos","/turnos-planificador","/turnos-demo"]},
+ {label:"Incidencias",href:"/emergencias-demo",matches:["/emergencias-demo"]},
+ {label:"Bitácora",href:"/operaciones-demo",matches:["/operaciones-demo","/entrega-turnos-demo"]},
+ {label:"Admin",href:"/administracion-demo",matches:["/administracion-demo"]}
 ];
 
 export default function FloatingNav(){
@@ -38,7 +38,7 @@ export default function FloatingNav(){
  if(!isHome){
   return <><div className="floatingNavSpacer" aria-hidden="true"/><div className="floatingNav floatingNavOps" role="navigation" aria-label="Navegación operativa">
    <button className="floatingBrand" onClick={()=>router.push("/")} aria-label="Volver a ORBI LIVING"><span>O</span><b>ORBI</b></button>
-   <div className="floatingLinks opsLinks">{operationItems.map(item=><button key={item.href} className={pathname===item.href?"active":""} aria-current={pathname===item.href?"page":undefined} onClick={()=>router.push(item.href)}>{item.label}</button>)}</div>
+   <div className="floatingLinks opsLinks">{operationItems.map(item=>{const current=item.matches.includes(pathname);return <button key={item.href} className={current?"active":""} aria-current={current?"page":undefined} onClick={()=>router.push(item.href)}>{item.label}</button>;})}</div>
   </div></>;
  }
  return <div className="floatingNav" role="navigation" aria-label="Navegación principal">
