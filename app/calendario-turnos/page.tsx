@@ -70,3 +70,4 @@ export default function CalendarTurnos(){
  </section>
  <p style={{color:"#8daebf",fontSize:12,marginTop:20}}>Cobertura operativa únicamente; no controla asistencia laboral, remuneraciones ni horas extraordinarias. Los feriados cargados corresponden a Chile 2026; feriados extraordinarios o locales deben validarse aparte.</p>
  </div></main>;
+}
