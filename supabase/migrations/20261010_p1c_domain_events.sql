@@ -9,6 +9,46 @@ alter table public.shift_assignments
   add constraint shift_assignments_confirmed_requires_assignee
   check(status not in ('confirmed','received') or assignee_staff_id is not null);
 
+create or replace function private.validate_shift_actor_scope()
+returns trigger
+language plpgsql
+set search_path=public,private,auth
+as $$
+declare
+ actor_role text;
+begin
+ actor_role:=private.active_operations_role(new.community_id);
+ if actor_role is distinct from 'concierge' then
+  return new;
+ end if;
+
+ if new.updated_by is distinct from auth.uid() then
+  raise exception 'concierge update must stamp authenticated actor' using errcode='42501';
+ end if;
+
+ if new.community_id is distinct from old.community_id
+    or new.service_date is distinct from old.service_date
+    or new.slot_code is distinct from old.slot_code
+    or new.starts_at is distinct from old.starts_at
+    or new.ends_at is distinct from old.ends_at
+    or new.created_by is distinct from old.created_by
+    or new.created_at is distinct from old.created_at then
+  raise exception 'concierge cannot alter shift definition' using errcode='42501';
+ end if;
+
+ if old.status in ('planned','confirmed') and new.status='vacant' and new.assignee_staff_id is null then
+  return new;
+ end if;
+
+ if old.status='confirmed' and new.status='received'
+    and new.assignee_staff_id is not distinct from old.assignee_staff_id then
+  return new;
+ end if;
+
+ raise exception 'concierge shift mutation not permitted' using errcode='42501';
+end;
+$$;
+
 create or replace function private.validate_shift_transition()
 returns trigger
 language plpgsql
@@ -152,10 +192,26 @@ begin
 end;
 $$;
 
+revoke all on function private.validate_shift_actor_scope() from public,anon,authenticated;
 revoke all on function private.validate_shift_transition() from public,anon,authenticated;
 revoke all on function private.record_shift_event() from public,anon,authenticated;
 revoke all on function private.validate_incident_transition() from public,anon,authenticated;
 revoke all on function private.record_incident_event() from public,anon,authenticated;
+
+drop policy if exists shift_assignments_concierge_limited_update on public.shift_assignments;
+create policy shift_assignments_concierge_limited_update on public.shift_assignments
+ for update to authenticated
+ using(private.has_operations_role(community_id,array['concierge']))
+ with check(
+  private.has_operations_role(community_id,array['concierge'])
+  and updated_by=(select auth.uid())
+  and status in ('vacant','received')
+ );
+
+drop trigger if exists shift_assignments_actor_scope on public.shift_assignments;
+create trigger shift_assignments_actor_scope
+ before update on public.shift_assignments
+ for each row execute function private.validate_shift_actor_scope();
 
 drop trigger if exists shift_assignments_validate_transition on public.shift_assignments;
 create trigger shift_assignments_validate_transition
