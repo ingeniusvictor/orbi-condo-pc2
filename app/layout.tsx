@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import FloatingNav from "../components/FloatingNav";
+import PrivateOperationsActivity from "../components/PrivateOperationsActivity";
 import "./globals.css";
 import "./oc-pc2.css";
 import "./navigation.css";
@@ -19,5 +20,5 @@ export const metadata:Metadata={
 };
 
 export default function RootLayout({children}:{children:React.ReactNode}){
- return <html lang="es"><body>{children}<FloatingNav/></body></html>
+ return <html lang="es"><body>{children}<PrivateOperationsActivity/><FloatingNav/></body></html>
 }
