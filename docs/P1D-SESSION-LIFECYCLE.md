@@ -53,6 +53,9 @@ Supabase access JWTs cannot be revoked before their encoded expiry. Clearing the
 ## Bounded upstream calls
 Auth user verification, membership resolution, Auth token calls and PostgREST operations have a 10-second request timeout in this cut. This prevents a stalled upstream Auth request from leaving a route handler waiting indefinitely.
 
+## Vercel staging boundary
+The branch `oc-pc2-45-session-lifecycle` has its own Preview-scoped `SUPABASE_URL`, publishable key and `ORBI_COMMUNITY_ID=pc2`. Production variables are not changed and no key is committed to GitHub. A fresh preview deployment is required after environment-variable changes before `configured:true` can be treated as verified for this branch.
+
 ## Deliberate non-goals
 P1D does **not** yet implement:
 - real staff/resident users;
