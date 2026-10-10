@@ -1,6 +1,7 @@
 "use client";
+import Link from "next/link";
 import {useEffect,useState} from "react";
-import {usePathname,useRouter} from "next/navigation";
+import {usePathname} from "next/navigation";
 
 const homeItems=[
  {label:"Inicio",target:".hero"},
@@ -19,7 +20,6 @@ const operationItems=[
 
 export default function FloatingNav(){
  const pathname=usePathname();
- const router=useRouter();
  const isHome=pathname==="/";
  const [active,setActive]=useState("Inicio");
  useEffect(()=>{
@@ -36,14 +36,14 @@ export default function FloatingNav(){
  },[isHome]);
  const go=(target:string)=>document.querySelector(target)?.scrollIntoView({behavior:"smooth",block:"start"});
  if(!isHome){
-  return <><div className="floatingNavSpacer" aria-hidden="true"/><div className="floatingNav floatingNavOps" role="navigation" aria-label="Navegación operativa">
-   <button className="floatingBrand" onClick={()=>router.push("/")} aria-label="Volver a ORBI LIVING"><span>O</span><b>ORBI</b></button>
-   <div className="floatingLinks opsLinks">{operationItems.map(item=>{const current=item.matches.includes(pathname);return <button key={item.href} className={current?"active":""} aria-current={current?"page":undefined} onClick={()=>router.push(item.href)}>{item.label}</button>;})}</div>
-  </div></>;
+  return <><div className="floatingNavSpacer" aria-hidden="true"/><nav className="floatingNav floatingNavOps" aria-label="Navegación operativa">
+   <Link className="floatingBrand" href="/" aria-label="Volver a ORBI LIVING"><span>O</span><b>ORBI</b></Link>
+   <div className="floatingLinks opsLinks">{operationItems.map(item=>{const current=item.matches.includes(pathname);return <Link key={item.href} href={item.href} className={current?"active":""} aria-current={current?"page":undefined}>{item.label}</Link>;})}</div>
+  </nav></>;
  }
- return <div className="floatingNav" role="navigation" aria-label="Navegación principal">
+ return <nav className="floatingNav" aria-label="Navegación principal">
    <button className={"floatingBrand "+(active==="Inicio"?"active":"")} onClick={()=>go(".hero")} aria-label="Ir al inicio"><span>O</span><b>ORBI</b></button>
    <div className="floatingLinks">{homeItems.slice(1).map(item=><button key={item.label} className={active===item.label?"active":""} aria-current={active===item.label?"page":undefined} onClick={()=>go(item.target)}>{item.label}</button>)}</div>
    <button className="floatingPulse" onClick={()=>go(".future")} aria-label="Ver visión futura"><i/>PC2</button>
- </div>;
+ </nav>;
 }
