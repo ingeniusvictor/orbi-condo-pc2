@@ -9,5 +9,5 @@ export async function GET(){
   communityId:identity?.communityId??null,
   role:identity?.role??null,
   permissions:identity?permissionsForIdentity(identity):[]
- },{headers:{"Cache-Control":"no-store"}});
+ },{headers:{"Cache-Control":"private, no-store"}});
 }
