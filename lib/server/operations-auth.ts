@@ -6,8 +6,10 @@ import {proposedPermission,proposedPermissionsFor,type OperationPermission} from
 const url=process.env.SUPABASE_URL;
 const anonKey=process.env.SUPABASE_ANON_KEY;
 const communityId=(process.env.ORBI_COMMUNITY_ID||"pc2").trim();
+const UPSTREAM_TIMEOUT_MS=10_000;
 export const operationsBackendConfigured=Boolean(url&&anonKey&&communityId);
 export const OPERATIONS_SESSION_COOKIE="orbi_session";
+export const OPERATIONS_REFRESH_COOKIE="orbi_refresh";
 const allowedRoles:readonly OperationsRole[]=["administrator","committee","concierge","mayordomo","resident"];
 
 export type OperationsIdentity={
@@ -35,6 +37,17 @@ export function operationsBackendConfig(){
  return {url,anonKey,communityId};
 }
 
+export async function operationsAuthFetch(path:string,init:RequestInit={}){
+ const {url,anonKey}=operationsBackendConfig();
+ const cleanPath=path.replace(/^\/+/,"");
+ return fetch(url+"/auth/v1/"+cleanPath,{
+  ...init,
+  headers:{apikey:anonKey,...init.headers},
+  cache:"no-store",
+  signal:init.signal??AbortSignal.timeout(UPSTREAM_TIMEOUT_MS),
+ });
+}
+
 function roleFrom(value:unknown):OperationsRole|null{
  return typeof value==="string"&&allowedRoles.includes(value as OperationsRole)?value as OperationsRole:null;
 }
@@ -52,12 +65,18 @@ export async function authenticateOperations():Promise<OperationsIdentity|null>{
  const token=(await cookies()).get(OPERATIONS_SESSION_COOKIE)?.value;
  if(!token)return null;
  const {url,anonKey,communityId}=operationsBackendConfig();
- const userResponse=await fetch(url+"/auth/v1/user",{headers:{apikey:anonKey,Authorization:"Bearer "+token},cache:"no-store"});
+ let userResponse:Response;
+ try{
+  userResponse=await operationsAuthFetch("user",{headers:{Authorization:"Bearer "+token}});
+ }catch{return null;}
  if(!userResponse.ok)return null;
  const user=await userResponse.json() as {id?:unknown};
  if(typeof user.id!=="string"||!user.id)return null;
  const membershipPath="/rest/v1/memberships?select=operations_role,active_from,active_until,disabled_at&user_id=eq."+encodeURIComponent(user.id)+"&community_id=eq."+encodeURIComponent(communityId)+"&limit=1";
- const memberResponse=await fetch(url+membershipPath,{headers:{apikey:anonKey,Authorization:"Bearer "+token},cache:"no-store"});
+ let memberResponse:Response;
+ try{
+  memberResponse=await fetch(url+membershipPath,{headers:{apikey:anonKey,Authorization:"Bearer "+token},cache:"no-store",signal:AbortSignal.timeout(UPSTREAM_TIMEOUT_MS)});
+ }catch{return null;}
  if(!memberResponse.ok)return null;
  const rows=await memberResponse.json() as MembershipRow[];
  const membership=rows[0];
@@ -80,5 +99,10 @@ export function permissionsForIdentity(identity:OperationsIdentity):readonly Ope
 export async function operationsDbFetch(path:string,identity:OperationsIdentity,init:RequestInit={}){
  const {url,anonKey}=operationsBackendConfig();
  const cleanPath=path.replace(/^\/+/,"");
- return fetch(url+"/rest/v1/"+cleanPath,{...init,headers:{apikey:anonKey,Authorization:"Bearer "+identity.accessToken,...init.headers},cache:"no-store"});
+ return fetch(url+"/rest/v1/"+cleanPath,{
+  ...init,
+  headers:{apikey:anonKey,Authorization:"Bearer "+identity.accessToken,...init.headers},
+  cache:"no-store",
+  signal:init.signal??AbortSignal.timeout(UPSTREAM_TIMEOUT_MS),
+ });
 }
