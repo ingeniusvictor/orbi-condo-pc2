@@ -10,6 +10,15 @@ function Fail([string]$Message) {
   exit 1
 }
 
+function ConvertFrom-SecureStringPlain([Security.SecureString]$SecureValue) {
+  $bstr = [Runtime.InteropServices.Marshal]::SecureStringToBSTR($SecureValue)
+  try {
+    return [Runtime.InteropServices.Marshal]::PtrToStringBSTR($bstr)
+  } finally {
+    [Runtime.InteropServices.Marshal]::ZeroFreeBSTR($bstr)
+  }
+}
+
 function Test-SupabaseDbUrl([string]$Value) {
   if ([string]::IsNullOrWhiteSpace($Value)) { return $false }
   if ($Value.Length -gt 2048) { return $false }
@@ -29,11 +38,40 @@ function Test-SupabaseDbUrl([string]$Value) {
 }
 
 if (-not (Test-Path Env:\SUPABASE_DB_URL)) {
-  Fail "SUPABASE_DB_URL is not set. Obtain the Session Pooler connection string from Supabase Connect and set it only in this process environment."
+  Write-Host "SUPABASE_DB_URL is not set." -ForegroundColor Yellow
+  Write-Host "Paste only the Supabase Postgres connection URI at the hidden prompt below." -ForegroundColor Yellow
+  Write-Host "The value will not be echoed and will not be written to PowerShell history." -ForegroundColor Yellow
+
+  $secureUri = Read-Host "Supabase connection URI" -AsSecureString
+  $candidateUri = ConvertFrom-SecureStringPlain $secureUri
+  Remove-Variable secureUri -ErrorAction SilentlyContinue
+
+  if ($candidateUri -match '\[YOUR-PASSWORD\]') {
+    $securePassword = Read-Host "Database password" -AsSecureString
+    $plainPassword = ConvertFrom-SecureStringPlain $securePassword
+    Remove-Variable securePassword -ErrorAction SilentlyContinue
+
+    try {
+      $encodedPassword = [Uri]::EscapeDataString($plainPassword)
+      $candidateUri = $candidateUri.Replace('[YOUR-PASSWORD]', $encodedPassword)
+    } finally {
+      Remove-Variable plainPassword -ErrorAction SilentlyContinue
+      Remove-Variable encodedPassword -ErrorAction SilentlyContinue
+    }
+  }
+
+  if (-not (Test-SupabaseDbUrl $candidateUri)) {
+    Remove-Variable candidateUri -ErrorAction SilentlyContinue
+    Fail "The supplied value is not a valid Supabase Postgres connection string. Paste only the URI shown by Supabase Connect (Session Pooler is recommended for IPv4-only networks)."
+  }
+
+  $env:SUPABASE_DB_URL = $candidateUri
+  Remove-Variable candidateUri -ErrorAction SilentlyContinue
+  Write-Host "SUPABASE_DB_URL loaded securely for this PowerShell process." -ForegroundColor Green
 }
 
 if (-not (Test-SupabaseDbUrl $env:SUPABASE_DB_URL)) {
-  Fail "SUPABASE_DB_URL is present but is not a valid Supabase Postgres connection string. Clear it and load only the connection URI; do not paste a PowerShell block or other text into the variable."
+  Fail "SUPABASE_DB_URL is present but is not a valid Supabase Postgres connection string. Clear it and rerun this script; the script can securely prompt for the URI."
 }
 
 $SupabaseMode = $null
