@@ -27,23 +27,30 @@ if (-not (Get-Command docker -ErrorAction SilentlyContinue)) {
   Fail "Docker was not found in PATH. Current Supabase db dump uses Docker for the managed pg_dump image."
 }
 
-try {
-  docker info *> $null
-} catch {
+& docker info *> $null
+if ($LASTEXITCODE -ne 0) {
   Fail "Docker is installed but the engine is not available. Start Docker Desktop and retry."
 }
 
-function Invoke-Supabase {
-  param([Parameter(ValueFromRemainingArguments = $true)][string[]]$Args)
+function Invoke-SupabaseCli {
+  param(
+    [Parameter(Mandatory = $true)]
+    [string]$Operation,
+
+    [Parameter(Mandatory = $true)]
+    [string[]]$CommandArgs
+  )
 
   if ($SupabaseMode -eq "global") {
-    & supabase @Args
+    & supabase @CommandArgs
   } else {
-    & npx --yes supabase@latest @Args
+    & npx --yes "supabase@latest" @CommandArgs
   }
 
-  if ($LASTEXITCODE -ne 0) {
-    Fail "Supabase CLI command failed: $($Args -join ' ')"
+  $exitCode = $LASTEXITCODE
+  if ($exitCode -ne 0) {
+    # Never echo CommandArgs here because they contain SUPABASE_DB_URL.
+    Fail "Supabase CLI command failed during '$Operation' (exit code $exitCode)."
   }
 }
 
@@ -57,14 +64,33 @@ $data = Join-Path $out "data.sql"
 $manifest = Join-Path $out "manifest.sha256.txt"
 $metadata = Join-Path $out "backup-metadata.txt"
 
-Write-Host "ORBI LIVING · Supabase logical backup" -ForegroundColor Cyan
+Write-Host "ORBI LIVING - Supabase logical backup" -ForegroundColor Cyan
 Write-Host "Output: $out"
 Write-Host "Connection string is intentionally not printed."
 Write-Host "Supabase CLI mode: $SupabaseMode"
 
-Invoke-Supabase db dump --db-url $env:SUPABASE_DB_URL -f $roles --role-only
-Invoke-Supabase db dump --db-url $env:SUPABASE_DB_URL -f $schema
-Invoke-Supabase db dump --db-url $env:SUPABASE_DB_URL -f $data --use-copy --data-only -x "storage.buckets_vectors" -x "storage.vector_indexes"
+Invoke-SupabaseCli -Operation "roles dump" -CommandArgs @(
+  "db", "dump",
+  "--db-url", $env:SUPABASE_DB_URL,
+  "-f", $roles,
+  "--role-only"
+)
+
+Invoke-SupabaseCli -Operation "schema dump" -CommandArgs @(
+  "db", "dump",
+  "--db-url", $env:SUPABASE_DB_URL,
+  "-f", $schema
+)
+
+Invoke-SupabaseCli -Operation "data dump" -CommandArgs @(
+  "db", "dump",
+  "--db-url", $env:SUPABASE_DB_URL,
+  "-f", $data,
+  "--use-copy",
+  "--data-only",
+  "-x", "storage.buckets_vectors",
+  "-x", "storage.vector_indexes"
+)
 
 $files = @($roles, $schema, $data)
 foreach ($file in $files) {
@@ -81,7 +107,7 @@ $hashLines | Set-Content -Encoding UTF8 $manifest
 if ($SupabaseMode -eq "global") {
   $supabaseVersion = (& supabase --version 2>$null | Select-Object -First 1)
 } else {
-  $supabaseVersion = (& npx --yes supabase@latest --version 2>$null | Select-Object -First 1)
+  $supabaseVersion = (& npx --yes "supabase@latest" --version 2>$null | Select-Object -First 1)
 }
 $dockerVersion = (& docker --version 2>$null | Select-Object -First 1)
 @(
