@@ -10,8 +10,30 @@ function Fail([string]$Message) {
   exit 1
 }
 
-if ([string]::IsNullOrWhiteSpace($env:SUPABASE_DB_URL)) {
+function Test-SupabaseDbUrl([string]$Value) {
+  if ([string]::IsNullOrWhiteSpace($Value)) { return $false }
+  if ($Value.Length -gt 2048) { return $false }
+  if ($Value -match '[\r\n\t]') { return $false }
+  if ($Value -match '\s') { return $false }
+  if ($Value -match '\[YOUR-PASSWORD\]') { return $false }
+
+  $uri = $null
+  if (-not [Uri]::TryCreate($Value, [UriKind]::Absolute, [ref]$uri)) { return $false }
+  if ($uri.Scheme -notin @('postgres', 'postgresql')) { return $false }
+  if ([string]::IsNullOrWhiteSpace($uri.UserInfo)) { return $false }
+  if ([string]::IsNullOrWhiteSpace($uri.Host)) { return $false }
+  if ($uri.Host -notmatch '(^|\.)supabase\.(co|com)$') { return $false }
+  if ($uri.AbsolutePath -ne '/postgres') { return $false }
+
+  return $true
+}
+
+if (-not (Test-Path Env:\SUPABASE_DB_URL)) {
   Fail "SUPABASE_DB_URL is not set. Obtain the Session Pooler connection string from Supabase Connect and set it only in this process environment."
+}
+
+if (-not (Test-SupabaseDbUrl $env:SUPABASE_DB_URL)) {
+  Fail "SUPABASE_DB_URL is present but is not a valid Supabase Postgres connection string. Clear it and load only the connection URI; do not paste a PowerShell block or other text into the variable."
 }
 
 $SupabaseMode = $null
