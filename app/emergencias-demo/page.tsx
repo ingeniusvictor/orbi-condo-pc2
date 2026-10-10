@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useMemo, useState } from "react";
 import {
+  canTransitionIncident,
   sanitizeDemoSummary,
   type EscalationRole,
   type IncidentArea,
@@ -87,9 +88,10 @@ export default function EmergenciasDemo(){
           <div style={{display:"flex",justifyContent:"space-between",gap:10,flexWrap:"wrap"}}><strong>{areas[i.area]} · {priorities[i.priority]}</strong><span style={{fontSize:12,color:i.state==="resolved"||i.state==="closed"?"#8fe0b0":"#ffd08b"}}>{states[i.state].toUpperCase()}</span></div>
           <p style={{lineHeight:1.5,overflowWrap:"anywhere"}}>{i.summary}</p><small style={{color:"#9cb9c8"}}>Responsable: {i.assignedRole?roles[i.assignedRole]:"Sin asignar"} · Fecha: {i.serviceDate}</small>
           <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(min(100%,150px),1fr))",gap:8,marginTop:14}}>
-            <select aria-label="Estado" value={i.state} onChange={e=>patch(i.id,{state:e.target.value as IncidentOperationalState})} style={field}>{Object.entries(states).map(([v,l])=><option value={v} key={v}>{l}</option>)}</select>
-            <select aria-label="Responsable" value={i.assignedRole??""} onChange={e=>patch(i.id,{assignedRole:e.target.value?e.target.value as EscalationRole:null})} style={field}><option value="">Sin asignar</option>{Object.entries(roles).map(([v,l])=><option value={v} key={v}>{l}</option>)}</select>
+            <label style={{fontSize:12,color:"#a9c3d1"}}>Estado<select aria-label="Estado" value={i.state} onChange={e=>patch(i.id,{state:e.target.value as IncidentOperationalState})} style={field}>{Object.entries(states).map(([v,l])=>{const next=v as IncidentOperationalState;return <option value={v} key={v} disabled={next!==i.state&&!canTransitionIncident(i.state,next)}>{l}</option>;})}</select></label>
+            <label style={{fontSize:12,color:"#a9c3d1"}}>Responsable<select aria-label="Responsable" value={i.assignedRole??""} onChange={e=>patch(i.id,{assignedRole:e.target.value?e.target.value as EscalationRole:null})} style={field}><option value="">Sin asignar</option>{Object.entries(roles).map(([v,l])=><option value={v} key={v}>{l}</option>)}</select></label>
           </div>
+          <p style={{color:"#839fac",fontSize:11,lineHeight:1.45,marginBottom:0}}>Las transiciones imposibles para el estado actual aparecen deshabilitadas. En producción, esta regla deberá repetirse y auditarse en el servidor.</p>
         </article>)}</div>
       </section>
       {incidents.length>0&&<button onClick={()=>setIncidents([])} style={{...field,width:"auto",marginTop:18,cursor:"pointer",background:"#213f50"}}>Limpiar datos de demostración</button>}
