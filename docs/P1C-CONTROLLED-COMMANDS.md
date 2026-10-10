@@ -55,11 +55,49 @@ Every mutation carries `expectedRevision`. The REST update is filtered by the cu
 
 The existing revision trigger increments the row after an accepted update and server timestamps remain authoritative.
 
+## Live staging validation
+The P1C migration was applied successfully to the dedicated Supabase staging project. All tests used synthetic subjects and records only.
+
+### Shift lifecycle
+A new synthetic shift was created at revision 1. Live RLS/trigger tests then proved the full sequence:
+
+`planned → vacant → requested → confirmed → received`
+
+Resulting revisions advanced `1 → 2 → 3 → 4 → 5` and the database appended, in order:
+- `created` by the synthetic administrator;
+- `gap_reported` by the synthetic concierge;
+- `replacement_requested` by the synthetic mayordomo;
+- `replacement_confirmed` by the synthetic administrator;
+- `handoff_received` by the synthetic concierge.
+
+An existing confirmed synthetic shift was also moved to `received` by concierge after the RLS policy consolidation, confirming the final combined policy still permits the intended handoff path.
+
+### Negative shift tests
+- `planned → confirmed` is rejected in PostgreSQL as an invalid transition.
+- concierge attempting to alter `starts_at` is rejected with `concierge cannot alter shift definition`.
+- direct authenticated INSERT into `shift_events` remains denied at table-privilege level.
+
+### Incident lifecycle
+- `in_progress → closed` is rejected in PostgreSQL as invalid.
+- `in_progress → resolved` succeeds for mayordomo and increments revision.
+- a new incident created by concierge automatically appends an `incident_events.created` event with the concierge actor.
+
+### Stale revision guard
+A mutation filtered with an obsolete incident revision affected **0 rows**, validating the database side of the optimistic concurrency pattern. The HTTP `409` mapping remains to be exercised end-to-end after password/session Auth is available.
+
+### Advisor review after DDL
+Security Advisor shows no new database/RLS/function exposure introduced by P1C. The only security warning remains Supabase Auth leaked-password protection, which Supabase documents as a Pro-plan feature and is already tracked as a production decision.
+
+Performance Advisor initially reported two permissive UPDATE policies on `shift_assignments` (P1B admin/mayordomo plus P1C concierge). P1C was hardened to consolidate them into one `shift_assignments_authorized_update` policy. After the correction, the multiple-policy warning disappeared; only `unused_index` INFO notices remain on the low-traffic staging database.
+
+## Vercel preview boundary
+The P1C branch has branch-scoped Preview variables for the dedicated Supabase staging project, including explicit `ORBI_COMMUNITY_ID=pc2`. No staging credential is committed to GitHub and production variables were not changed.
+
 ## Privacy boundary
 No PII is added by P1C. Real staff IDs remain private references. Incident reporting in this cut deliberately avoids free-text narratives, photos, phones, plates, RUT or resident information.
 
 ## Not yet complete
-- full real Supabase Auth login/session lifecycle;
+- full real Supabase Auth password/session lifecycle;
 - refresh-token rotation;
 - rate limiting;
 - production notification channels;
@@ -68,13 +106,17 @@ No PII is added by P1C. Real staff IDs remain private references. Incident repor
 - recovery/restore gate;
 - real users or real operational data.
 
-## Acceptance gate
-P1C is not Ready until:
-1. `npm run check` is GREEN;
-2. migration applies cleanly to staging;
-3. valid and invalid shift transitions are tested under real RLS roles;
-4. concierge can report a gap and receive a confirmed handoff but cannot perform broader shift edits;
-5. domain events are automatically appended with the authenticated actor;
-6. invalid incident transitions are rejected in PostgreSQL;
-7. stale revision updates are demonstrated to affect zero rows / return conflict at API level once end-to-end Auth is available;
-8. Supabase Security Advisor is reviewed after DDL changes.
+## Acceptance gate status
+- `npm run check`: GREEN on the initial P1C cut; latest hardening commit must remain GREEN.
+- migration applies cleanly to staging: **PASS**.
+- valid/invalid shift transitions under RLS: **PASS**.
+- concierge gap + handoff, broader edit denied: **PASS**.
+- automatic shift domain events with actor: **PASS**.
+- invalid incident transition rejected: **PASS**.
+- automatic incident create event with actor: **PASS**.
+- stale revision affects zero rows at DB layer: **PASS**.
+- Security/Performance Advisor reviewed after DDL: **PASS with documented Free-plan Auth warning**.
+- end-to-end authenticated API conflict mapping: **PENDING**.
+- recovery/restore drill: **PENDING**.
+
+P1C remains Draft until the latest build/preview is green and the remaining Auth/recovery gates are addressed.
