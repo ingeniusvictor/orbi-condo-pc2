@@ -27,11 +27,13 @@ export default function CalendarTurnos(){
   const key=shiftKey(date,slotId);
   const base=overrides[key]??{role:slots.find(s=>s.id===slotId)?.defaultRole??null,status:"planned" as ShiftStatus,note:"",updatedAt:""};
   const next={...base,...patch,updatedAt:new Date().toISOString()};
-  if(next.status==="vacant")next.role=null;
-  if(next.role===null&&next.status!=="vacant")next.status="vacant";
+  if(patch.status==="vacant")next.role=null;
+  const roleWasExplicitlyCleared=Object.prototype.hasOwnProperty.call(patch,"role")&&patch.role===null;
+  if(roleWasExplicitlyCleared&&patch.status===undefined)next.status="vacant";
+  if(next.role===null&&(next.status==="planned"||next.status==="confirmed"||next.status==="received"))next.status="vacant";
   setOverrides(prev=>({...prev,[key]:next}));
  };
- const count=slots.filter(s=>{const x=overrides[shiftKey(date,s.id)];return Boolean(x&&(x.status==="vacant"||x.role===null));}).length;
+ const count=slots.filter(s=>overrides[shiftKey(date,s.id)]?.status==="vacant").length;
  const requestCount=slots.filter(s=>overrides[shiftKey(date,s.id)]?.status==="requested").length;
  const unresolvedCount=slots.filter(s=>s.validation==="inferred_unverified"&&!overrides[shiftKey(date,s.id)]).length;
  return <main style={{minHeight:"100vh",background:"radial-gradient(ellipse at top right,#16495a,#061321 65%)",color:"#eafcff",fontFamily:"system-ui,sans-serif",padding:"clamp(16px,4vw,50px)"}}>
@@ -55,21 +57,22 @@ export default function CalendarTurnos(){
  </div>
  </section>
  <section style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(min(100%,260px),1fr))",gap:14,marginTop:18}}>
- {slots.map(s=>{const key=shiftKey(date,s.id),override=overrides[key],role=override?override.role:s.defaultRole,status=override?.status??"planned",duplicate=Boolean(role&&duplicateRoles.has(role)),unverified=s.validation==="inferred_unverified"&&!override;return <article key={key} style={{...panel,minWidth:0,borderColor:unverified?"#9b7d47":status==="vacant"?"#bc6269":duplicate?"#b8795a":status==="requested"?"#ac8b4e":"#34586c"}}>
+ {slots.map(s=>{const key=shiftKey(date,s.id),override=overrides[key],role=override?override.role:s.defaultRole,status=override?.status??"planned",duplicate=Boolean(role&&duplicateRoles.has(role)),unverified=s.validation==="inferred_unverified"&&!override,hasAssignee=Boolean(role);const statusValue=unverified?"__unverified":status;return <article key={key} style={{...panel,minWidth:0,borderColor:unverified?"#9b7d47":status==="vacant"?"#bc6269":duplicate?"#b8795a":status==="requested"?"#ac8b4e":"#34586c"}}>
  <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:8,flexWrap:"wrap"}}><strong style={{fontSize:19}}>{s.label}</strong><span style={{fontSize:11,color:unverified?"#ffd18a":statusColors[status],fontWeight:700}}>{unverified?"PENDIENTE DE VALIDACIÓN":statusLabels[status].toUpperCase()}</span></div>
  <p style={{fontSize:23,fontWeight:750,margin:"12px 0"}}>{s.start}–{s.end}{s.nextDay?" +1 día":""}</p>
  <p style={{fontSize:12,color:"#a7c3d0"}}>Asignación habitual: {s.defaultRole?ROLE_LABELS[s.defaultRole]:"No confirmada"}</p>
  {unverified&&<p role="status" style={{fontSize:12,color:"#ffe0a6",background:"#3c3426",padding:9,borderRadius:8,lineHeight:1.5}}>Esta franja existe en la demo para visualizar la pregunta operacional pendiente. No significa que Part-time 2, un conserje fijo u otra persona la cubra realmente.</p>}
  {duplicate&&<p role="status" style={{fontSize:12,color:"#ffc19e",background:"#3b2926",padding:9,borderRadius:8}}>Este mismo puesto genérico figura en más de un turno de la fecha. Puede ser intencional, pero conviene revisar la cobertura.</p>}
  <label style={{display:"block",fontSize:13,marginTop:18}}>Asignación efectiva<select style={{...inputStyle,marginTop:7}} value={role??""} onChange={e=>setField(s.id,{role:e.target.value?e.target.value as ShiftRole:null,status:e.target.value?"planned":"vacant"})}><option value="">{unverified?"Pendiente de validación":"Vacante · sin responsable"}</option>{Object.entries(ROLE_LABELS).map(([id,name])=><option key={id} value={id}>{name}</option>)}</select></label>
- <label style={{display:"block",fontSize:13,marginTop:13}}>Estado<select style={{...inputStyle,marginTop:7}} value={status} onChange={e=>setField(s.id,{status:e.target.value as ShiftStatus})}><option value="planned">Programado</option><option value="vacant">Vacante</option><option value="requested">Reemplazo solicitado</option><option value="confirmed">Reemplazo confirmado</option><option value="received">Turno recibido</option></select></label>
+ <label style={{display:"block",fontSize:13,marginTop:13}}>Estado operativo<select style={{...inputStyle,marginTop:7}} value={statusValue} onChange={e=>{if(e.target.value!=="__unverified")setField(s.id,{status:e.target.value as ShiftStatus});}}><option value="__unverified" disabled>Pendiente de validación</option><option value="planned" disabled={!hasAssignee}>Programado</option><option value="vacant">Vacante confirmada</option><option value="requested" disabled={unverified}>Reemplazo solicitado</option><option value="confirmed" disabled={!hasAssignee}>Reemplazo confirmado</option><option value="received" disabled={!hasAssignee}>Turno recibido</option></select></label>
+ {!hasAssignee&&!unverified&&status==="requested"&&<p role="status" style={{fontSize:12,color:"#ffe0a6",background:"#3c3426",padding:9,borderRadius:8,lineHeight:1.5}}>Reemplazo solicitado sin persona confirmada. Este estado es válido hasta que alguien acepte la cobertura.</p>}
  <label style={{display:"block",fontSize:13,marginTop:13}}>Nota operativa genérica (opcional)<input maxLength={140} placeholder="Ej.: suplencia pendiente" value={override?.note??""} onChange={e=>setField(s.id,{note:e.target.value})} style={{...inputStyle,marginTop:7}}/></label>
  <button onClick={()=>setOverrides(prev=>{const next={...prev};delete next[key];return next;})} style={{...inputStyle,cursor:"pointer",marginTop:14,background:"#214657"}}>Restablecer referencia</button>
  </article>})}
  </section>
  <section style={{...panel,marginTop:18}}>
  <button onClick={()=>setShowHelp(v=>!v)} aria-expanded={showHelp} style={{...inputStyle,cursor:"pointer",textAlign:"left"}}>{showHelp?"Ocultar":"Ver"} protocolo de reemplazo urgente</button>
- {showHelp&&<div style={{color:"#c6dce5",fontSize:14,lineHeight:1.7}}><p>1. Marcar Vacante cuando se informe ausencia.</p><p>2. Contactar por los canales existentes a mayordomía o administración.</p><p>3. Seleccionar Suplente 1 o 2 y marcar Reemplazo solicitado.</p><p>4. Marcar Reemplazo confirmado solo cuando exista aceptación.</p><p>5. Marcar Turno recibido solo después de comprobar la recepción efectiva.</p><p>La app no realiza llamadas, verifica presencia ni envía alertas automáticas en esta demo.</p></div>}
+ {showHelp&&<div style={{color:"#c6dce5",fontSize:14,lineHeight:1.7}}><p>1. Marcar Vacante cuando se informe ausencia.</p><p>2. Contactar por los canales existentes a mayordomía o administración.</p><p>3. Marcar Reemplazo solicitado aunque todavía no exista una persona confirmada.</p><p>4. Asignar a la persona que acepte la cobertura y marcar Reemplazo confirmado.</p><p>5. Marcar Turno recibido solo después de comprobar la recepción efectiva.</p><p>La app no realiza llamadas, verifica presencia ni envía alertas automáticas en esta demo.</p></div>}
  </section>
  <p style={{color:"#8daebf",fontSize:12,marginTop:20}}>Cobertura operativa únicamente; no controla asistencia laboral, remuneraciones ni horas extraordinarias. Los feriados cargados corresponden a Chile 2026; feriados extraordinarios o locales deben validarse aparte.</p>
  </div></main>;
