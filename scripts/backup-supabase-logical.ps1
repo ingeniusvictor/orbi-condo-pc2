@@ -14,8 +14,13 @@ if ([string]::IsNullOrWhiteSpace($env:SUPABASE_DB_URL)) {
   Fail "SUPABASE_DB_URL is not set. Obtain the Session Pooler connection string from Supabase Connect and set it only in this process environment."
 }
 
-if (-not (Get-Command supabase -ErrorAction SilentlyContinue)) {
-  Fail "Supabase CLI was not found in PATH. Install it before running this backup."
+$SupabaseMode = $null
+if (Get-Command supabase -ErrorAction SilentlyContinue) {
+  $SupabaseMode = "global"
+} elseif (Get-Command npx -ErrorAction SilentlyContinue) {
+  $SupabaseMode = "npx"
+} else {
+  Fail "Supabase CLI was not found and npx is unavailable. Install Node.js 20+ or a global Supabase CLI before running this backup."
 }
 
 if (-not (Get-Command docker -ErrorAction SilentlyContinue)) {
@@ -26,6 +31,20 @@ try {
   docker info *> $null
 } catch {
   Fail "Docker is installed but the engine is not available. Start Docker Desktop and retry."
+}
+
+function Invoke-Supabase {
+  param([Parameter(ValueFromRemainingArguments = $true)][string[]]$Args)
+
+  if ($SupabaseMode -eq "global") {
+    & supabase @Args
+  } else {
+    & npx --yes supabase@latest @Args
+  }
+
+  if ($LASTEXITCODE -ne 0) {
+    Fail "Supabase CLI command failed: $($Args -join ' ')"
+  }
 }
 
 $stamp = Get-Date -Format "yyyyMMdd_HHmmss"
@@ -41,15 +60,11 @@ $metadata = Join-Path $out "backup-metadata.txt"
 Write-Host "ORBI LIVING · Supabase logical backup" -ForegroundColor Cyan
 Write-Host "Output: $out"
 Write-Host "Connection string is intentionally not printed."
+Write-Host "Supabase CLI mode: $SupabaseMode"
 
-& supabase db dump --db-url $env:SUPABASE_DB_URL -f $roles --role-only
-if ($LASTEXITCODE -ne 0) { Fail "Role dump failed." }
-
-& supabase db dump --db-url $env:SUPABASE_DB_URL -f $schema
-if ($LASTEXITCODE -ne 0) { Fail "Schema dump failed." }
-
-& supabase db dump --db-url $env:SUPABASE_DB_URL -f $data --use-copy --data-only -x "storage.buckets_vectors" -x "storage.vector_indexes"
-if ($LASTEXITCODE -ne 0) { Fail "Data dump failed." }
+Invoke-Supabase db dump --db-url $env:SUPABASE_DB_URL -f $roles --role-only
+Invoke-Supabase db dump --db-url $env:SUPABASE_DB_URL -f $schema
+Invoke-Supabase db dump --db-url $env:SUPABASE_DB_URL -f $data --use-copy --data-only -x "storage.buckets_vectors" -x "storage.vector_indexes"
 
 $files = @($roles, $schema, $data)
 foreach ($file in $files) {
@@ -63,11 +78,16 @@ $hashLines = foreach ($file in $files) {
 }
 $hashLines | Set-Content -Encoding UTF8 $manifest
 
-$supabaseVersion = (& supabase --version 2>$null | Select-Object -First 1)
+if ($SupabaseMode -eq "global") {
+  $supabaseVersion = (& supabase --version 2>$null | Select-Object -First 1)
+} else {
+  $supabaseVersion = (& npx --yes supabase@latest --version 2>$null | Select-Object -First 1)
+}
 $dockerVersion = (& docker --version 2>$null | Select-Object -First 1)
 @(
   "created_local=$((Get-Date).ToString('o'))"
   "supabase_cli=$supabaseVersion"
+  "supabase_mode=$SupabaseMode"
   "docker=$dockerVersion"
   "files=roles.sql,schema.sql,data.sql"
   "contains_real_data=REVIEW_BEFORE_STORAGE"
