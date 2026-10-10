@@ -75,18 +75,18 @@ export default function EmergenciasDemo(){
       <section style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(180px,1fr))",gap:12,margin:"18px 0"}}>
         {[{label:"Abiertas",value:openCount,note:"Requieren seguimiento"},{label:"Críticas abiertas",value:criticalCount,note:"Escalamiento manual inmediato"},{label:"Total demo",value:incidents.length,note:"Guardado local en este navegador"}].map(x=><article key={x.label} style={panel}><small style={{color:"#9db9c7"}}>{x.label}</small><div style={{fontSize:34,fontWeight:800,color:x.label.includes("Críticas")&&x.value?"#ffadad":"#79e4e1",margin:"7px 0"}}>{x.value}</div><small style={{color:"#adc6d2"}}>{x.note}</small></article>)}
       </section>
-      <section style={{display:"grid",gridTemplateColumns:"minmax(280px,.8fr) minmax(320px,1.2fr)",gap:16,alignItems:"start"}}>
-        <form onSubmit={addIncident} style={panel}><h2 style={{marginTop:0}}>Nueva incidencia ficticia</h2>
+      <section style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(min(100%,320px),1fr))",gap:16,alignItems:"start"}}>
+        <form onSubmit={addIncident} style={{...panel,minWidth:0}}><h2 style={{marginTop:0}}>Nueva incidencia ficticia</h2>
           <label style={{display:"block",fontSize:13,marginTop:12}}>Área<select value={area} onChange={e=>setArea(e.target.value as IncidentArea)} style={field}>{Object.entries(areas).map(([v,l])=><option value={v} key={v}>{l}</option>)}</select></label>
           <label style={{display:"block",fontSize:13,marginTop:12}}>Prioridad<select value={priority} onChange={e=>setPriority(e.target.value as IncidentPriority)} style={field}>{Object.entries(priorities).map(([v,l])=><option value={v} key={v}>{l}</option>)}</select></label>
           <label style={{display:"block",fontSize:13,marginTop:12}}>Responsable operativo<select value={role??""} onChange={e=>setRole(e.target.value?e.target.value as EscalationRole:null)} style={field}><option value="">Sin asignar</option>{Object.entries(roles).map(([v,l])=><option value={v} key={v}>{l}</option>)}</select></label>
           <label style={{display:"block",fontSize:13,marginTop:12}}>Descripción genérica<textarea required maxLength={180} value={summary} onChange={e=>setSummary(e.target.value)} placeholder="Ej.: filtración ficticia en área común" rows={4} style={field}/></label>
           <button type="submit" style={{...field,background:"#65deda",color:"#08222b",fontWeight:800,cursor:"pointer",marginTop:16}}>Registrar en la demo</button>
         </form>
-        <div style={{display:"grid",gap:12}}>{incidents.length===0?<section style={panel}><h2>Sin incidencias demo</h2><p style={{color:"#a8c2cf"}}>Crea una incidencia ficticia para probar el flujo de seguimiento.</p></section>:incidents.map(i=><article key={i.id} style={{...panel,borderColor:i.priority==="critical"?"#a75b61":"#34566a"}}>
+        <div style={{display:"grid",gap:12,minWidth:0}}>{incidents.length===0?<section style={panel}><h2>Sin incidencias demo</h2><p style={{color:"#a8c2cf"}}>Crea una incidencia ficticia para probar el flujo de seguimiento.</p></section>:incidents.map(i=><article key={i.id} style={{...panel,minWidth:0,borderColor:i.priority==="critical"?"#a75b61":"#34566a"}}>
           <div style={{display:"flex",justifyContent:"space-between",gap:10,flexWrap:"wrap"}}><strong>{areas[i.area]} · {priorities[i.priority]}</strong><span style={{fontSize:12,color:i.state==="resolved"||i.state==="closed"?"#8fe0b0":"#ffd08b"}}>{states[i.state].toUpperCase()}</span></div>
-          <p style={{lineHeight:1.5}}>{i.summary}</p><small style={{color:"#9cb9c8"}}>Responsable: {i.assignedRole?roles[i.assignedRole]:"Sin asignar"} · Fecha: {i.serviceDate}</small>
-          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(150px,1fr))",gap:8,marginTop:14}}>
+          <p style={{lineHeight:1.5,overflowWrap:"anywhere"}}>{i.summary}</p><small style={{color:"#9cb9c8"}}>Responsable: {i.assignedRole?roles[i.assignedRole]:"Sin asignar"} · Fecha: {i.serviceDate}</small>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(min(100%,150px),1fr))",gap:8,marginTop:14}}>
             <select aria-label="Estado" value={i.state} onChange={e=>patch(i.id,{state:e.target.value as IncidentOperationalState})} style={field}>{Object.entries(states).map(([v,l])=><option value={v} key={v}>{l}</option>)}</select>
             <select aria-label="Responsable" value={i.assignedRole??""} onChange={e=>patch(i.id,{assignedRole:e.target.value?e.target.value as EscalationRole:null})} style={field}><option value="">Sin asignar</option>{Object.entries(roles).map(([v,l])=><option value={v} key={v}>{l}</option>)}</select>
           </div>
