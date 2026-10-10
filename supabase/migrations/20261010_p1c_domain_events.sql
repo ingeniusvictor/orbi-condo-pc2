@@ -198,14 +198,24 @@ revoke all on function private.record_shift_event() from public,anon,authenticat
 revoke all on function private.validate_incident_transition() from public,anon,authenticated;
 revoke all on function private.record_incident_event() from public,anon,authenticated;
 
+-- Replace the P1B admin/mayordomo update policy with a single permissive policy
+-- covering all authorized operational roles. PostgreSQL trigger validation below
+-- then constrains concierge to gap/handoff operations only.
+drop policy if exists shift_assignments_manage_update on public.shift_assignments;
 drop policy if exists shift_assignments_concierge_limited_update on public.shift_assignments;
-create policy shift_assignments_concierge_limited_update on public.shift_assignments
+drop policy if exists shift_assignments_authorized_update on public.shift_assignments;
+create policy shift_assignments_authorized_update on public.shift_assignments
  for update to authenticated
- using(private.has_operations_role(community_id,array['concierge']))
+ using(private.has_operations_role(community_id,array['administrator','mayordomo','concierge']))
  with check(
-  private.has_operations_role(community_id,array['concierge'])
-  and updated_by=(select auth.uid())
-  and status in ('vacant','received')
+  updated_by=(select auth.uid())
+  and (
+   private.has_operations_role(community_id,array['administrator','mayordomo'])
+   or (
+    private.has_operations_role(community_id,array['concierge'])
+    and status in ('vacant','received')
+   )
+  )
  );
 
 drop trigger if exists shift_assignments_actor_scope on public.shift_assignments;
