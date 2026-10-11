@@ -79,26 +79,27 @@ export async function GET(req:Request){
  });
  const attentionChecks=checks.filter(check=>check.result==="attention"&&!check.incident_id);
  const items:ContinuityItem[]=[];
+ const addItem=(item:Omit<ContinuityItem,"id">)=>items.push({id:`continuity-${items.length+1}`,...item});
 
  openRounds.forEach(round=>{
   const log=logById.get(round.shift_log_id);const shift=log?shiftById.get(log.shift_assignment_id):undefined;
-  items.push({id:`round-open-${round.id}`,kind:"blocker",title:`Ronda ${roundLabel[round.round_type]??round.round_type} abierta`,detail:`${shift?.slot_code??"Turno"}: debe completarse antes de cerrar la bitácora.`,tone:"danger"});
+  addItem({kind:"blocker",title:`Ronda ${roundLabel[round.round_type]??round.round_type} abierta`,detail:`${shift?.slot_code??"Turno"}: debe completarse antes de cerrar la bitácora.`,tone:"danger"});
  });
- vacant.forEach(shift=>items.push({id:`vacant-${shift.id}`,kind:"coverage",title:`${shift.slot_code} sin cobertura`,detail:"Vacante operativa; Conserjería informa y el rol autorizado gestiona la cobertura.",tone:"danger"}));
- criticalIncidents.forEach(item=>items.push({id:`incident-critical-${item.id}`,kind:"incident",title:`Incidencia crítica · ${areaLabel[item.area]??item.area}`,detail:`Estado ${item.state.replaceAll("_"," ")}; debe permanecer visible en la continuidad del turno.`,tone:"danger"}));
- requested.forEach(shift=>items.push({id:`requested-${shift.id}`,kind:"coverage",title:`${shift.slot_code} · reemplazo solicitado`,detail:"La cobertura continúa pendiente de confirmación por un rol autorizado.",tone:"warning"}));
- highIncidents.forEach(item=>items.push({id:`incident-high-${item.id}`,kind:"incident",title:`Incidencia alta · ${areaLabel[item.area]??item.area}`,detail:`Estado ${item.state.replaceAll("_"," ")}; mantener seguimiento en el relevo.`,tone:"warning"}));
+ vacant.forEach(shift=>addItem({kind:"coverage",title:`${shift.slot_code} sin cobertura`,detail:"Vacante operativa; Conserjería informa y el rol autorizado gestiona la cobertura.",tone:"danger"}));
+ criticalIncidents.forEach(item=>addItem({kind:"incident",title:`Incidencia crítica · ${areaLabel[item.area]??item.area}`,detail:`Estado ${item.state.replaceAll("_"," ")}; debe permanecer visible en la continuidad del turno.`,tone:"danger"}));
+ requested.forEach(shift=>addItem({kind:"coverage",title:`${shift.slot_code} · reemplazo solicitado`,detail:"La cobertura continúa pendiente de confirmación por un rol autorizado.",tone:"warning"}));
+ highIncidents.forEach(item=>addItem({kind:"incident",title:`Incidencia alta · ${areaLabel[item.area]??item.area}`,detail:`Estado ${item.state.replaceAll("_"," ")}; mantener seguimiento en el relevo.`,tone:"warning"}));
  closedWithPending.forEach(log=>{
   const shift=shiftById.get(log.shift_assignment_id);
-  items.push({id:`closed-pending-${log.id}`,kind:"handoff",title:`Entrega con pendientes · ${shift?.slot_code??"Turno"}`,detail:`Cierre ${log.closure_code?.replaceAll("_"," ")??"con seguimiento"} · ${log.pending_items_count??0} pendiente(s) declarado(s).`,tone:log.closure_code==="escalated"?"danger":"warning"});
+  addItem({kind:"handoff",title:`Entrega con pendientes · ${shift?.slot_code??"Turno"}`,detail:`Cierre ${log.closure_code?.replaceAll("_"," ")??"con seguimiento"} · ${log.pending_items_count??0} pendiente(s) declarado(s).`,tone:log.closure_code==="escalated"?"danger":"warning"});
  });
  currentPendingEntries.forEach(entry=>{
   const log=logById.get(entry.shift_log_id);const shift=log?shiftById.get(log.shift_assignment_id):undefined;
-  items.push({id:`entry-${entry.id}`,kind:"handoff",title:`Bitácora · ${shift?.slot_code??"Turno"}`,detail:entry.entry_code==="handoff_pending"?`Pendiente para relevo${entry.case_reference?` · ${entry.case_reference}`:""}.`:`Entrada urgente ${entry.category}${entry.case_reference?` · ${entry.case_reference}`:""}.`,tone:entry.severity==="urgent"?"danger":"warning"});
+  addItem({kind:"handoff",title:`Bitácora · ${shift?.slot_code??"Turno"}`,detail:entry.entry_code==="handoff_pending"?`Pendiente para relevo${entry.case_reference?` · ${entry.case_reference}`:""}.`:`Entrada urgente ${entry.category}${entry.case_reference?` · ${entry.case_reference}`:""}.`,tone:entry.severity==="urgent"?"danger":"warning"});
  });
  attentionChecks.forEach(check=>{
   const round=roundById.get(check.round_id);const log=round?logById.get(round.shift_log_id):undefined;const shift=log?shiftById.get(log.shift_assignment_id):undefined;
-  items.push({id:`check-${check.id}`,kind:"round",title:`Checkpoint en atención · ${checkpointLabel[check.checkpoint_code]??check.checkpoint_code}`,detail:`Ronda ${roundLabel[round?.round_type??""]??round?.round_type??"operativa"}${shift?.slot_code?` · ${shift.slot_code}`:""}${check.case_reference?` · ${check.case_reference}`:""}.`,tone:"warning"});
+  addItem({kind:"round",title:`Checkpoint en atención · ${checkpointLabel[check.checkpoint_code]??check.checkpoint_code}`,detail:`Ronda ${roundLabel[round?.round_type??""]??round?.round_type??"operativa"}${shift?.slot_code?` · ${shift.slot_code}`:""}${check.case_reference?` · ${check.case_reference}`:""}.`,tone:"warning"});
  });
 
  const urgentEntries=currentPendingEntries.filter(entry=>entry.severity==="urgent").length;
