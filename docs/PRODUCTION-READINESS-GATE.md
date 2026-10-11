@@ -3,7 +3,7 @@
 ## Purpose
 This checklist is the hard boundary between the current synthetic staging system and any future use of real condominium information. **No real resident, worker, phone, RUT, plate, contract or private incident narrative may be loaded until every mandatory gate is explicitly closed.**
 
-Evidence snapshot: **2026-10-10 · Chile**. Current stack reaches P1O (#43), remains draft/stacked and **SYNTHETIC STAGING ONLY**.
+Evidence snapshot: **2026-10-10 · Chile**. Current stack reaches **P1AA (#55 candidate)**, remains draft/stacked and **SYNTHETIC STAGING ONLY**.
 
 ## G0 · Product scope
 - [x] ORBI LIVING operational scope documented: shifts, coverage, handoff, incidents, escalation and administrative traceability.
@@ -17,6 +17,7 @@ Evidence snapshot: **2026-10-10 · Chile**. Current stack reaches P1O (#43), rem
 - [x] No contracts, RUTs, phones, plates or resident data committed to GitHub.
 - [x] Build/typecheck gates are active.
 - [x] `/operaciones` and `/conserjeria` render with `noindex` in the runtime security smoke.
+- [x] Runtime security-header contract covers `nosniff`, Referrer-Policy, SAMEORIGIN, restrictive Permissions-Policy, no `X-Powered-By`, private `no-store` and no accidental CORS opt-in on private APIs.
 - [ ] Manual responsive visual QA completed at 390×844, 430×932, 768×1024, 1440×900 and 1920×1080.
 - [ ] Keyboard/focus/accessibility visual pass recorded.
 
@@ -29,8 +30,10 @@ Evidence snapshot: **2026-10-10 · Chile**. Current stack reaches P1O (#43), rem
 - [x] Auth/PostgREST upstream calls are time-bounded.
 - [x] Unconfigured runtime is proven fail-closed: session returns `configured:false`, private APIs deny anonymous access and no backend detail is exposed.
 - [x] Auth/operations API responses are centrally hardened with `Cache-Control: private, no-store`, including early 403 write rejections.
-- [ ] Supported synthetic Auth account proves login → session → refresh → logout end-to-end in the repeatable harness.
-- [ ] Invalid/stale refresh behavior proven end-to-end.
+- [x] Hermetic real-Next lifecycle proves login → session → refresh → logout, cookie rotation, revocation and return to anonymous without external network.
+- [x] Hermetic failure-mode contract proves invalid access, disabled/future/expired/unknown memberships, missing/invalid refresh and revoked access all fail closed.
+- [x] Staging QA runner requires an explicit target URL, blocks production by default, validates configured/anonymous preflight and verifies role/community do not drift after refresh.
+- [ ] Supported synthetic Auth account proves login → session → refresh → logout against the deployed staging backend in the repeatable harness.
 - [ ] Synthetic Mayordomía account confirmed through a supported Auth flow and role UI tested.
 - [ ] Synthetic Conserjería account confirmed through a supported Auth flow and role UI tested.
 - [ ] Durable app-level login abuse/rate-limit strategy approved.
@@ -46,7 +49,9 @@ Evidence snapshot: **2026-10-10 · Chile**. Current stack reaches P1O (#43), rem
 - [x] Direct event-table INSERT remains denied.
 - [x] `staff_private` SELECT tightened to Administrator/Mayordomía; Conserjería receives no private staff catalog.
 - [x] Old `community_members` architecture superseded; canonical model is `memberships`.
-- [x] Permission matrix is now an executable CI contract: Resident has no operational permissions; Committee remains read/review; Conserjería cannot administer coverage/incidents/contracts.
+- [x] Permission matrix is an executable CI contract: Resident has no operational permissions; Committee remains read/review; Conserjería cannot administer coverage/incidents/contracts.
+- [x] Hermetic Route Handler contract proves the same role matrix at the real server HTTP authorization boundary before resource access.
+- [x] Dashboard privacy projection contract proves Conserjería never queries/receives `staff_private`, Committee omits staff/activity streams and shift projections do not expose private assignee linkage.
 - [ ] Repeat the role matrix through real HTTP/UI sessions for confirmed synthetic Mayordomía and Conserjería accounts.
 
 ## G4 · Controlled writes and operational continuity
@@ -64,13 +69,17 @@ Evidence snapshot: **2026-10-10 · Chile**. Current stack reaches P1O (#43), rem
 - [x] Continuity derivation moved server-side and minimizes its payload; source resource IDs are not emitted in the snapshot.
 - [x] Continuity semantics are an executable CI contract: open round is the only technical close blocker; critical incidents/vacancies remain continuity signals rather than fabricated closure blocks.
 - [x] Runtime anonymous smoke proves representative private writes stop at Origin/Auth barrier before validation/persistence.
-- [ ] HTTP 409 conflict mapping proven end-to-end with a real synthetic Auth session (`ORBI_QA_409=1`).
+- [x] Hermetic HTTP conflict contract proves stale revision before PATCH, invalid transition, zero-row compare-and-swap race → 409 and valid scoped update.
+- [x] Staging QA runner wraps the optional concurrent 200/409 fixture in best-effort `finally` restoration and surfaces cleanup warnings.
+- [ ] HTTP 409 conflict mapping proven against the deployed staging backend with a real supported synthetic Auth session (`ORBI_QA_409=1`).
 - [ ] Authenticated HTTP E2E proves shift-log open/entry/close and round start/check/complete through the deployed app.
 
 ## G5 · Privacy / data governance
 - [x] Public/private data boundary documented.
 - [x] Real PII blocked from staging during security development.
-- [x] Current P1G–P1O surfaces use structured operational fields and synthetic references; no new narrative-free-form PII channel was introduced.
+- [x] Current private operational surfaces use structured fields and synthetic references; no new narrative-free-form PII channel was introduced.
+- [x] Client/server boundary contract prevents client modules from directly importing Supabase/server-only access or tracking private environment material.
+- [x] Continuity and dashboard projections have executable minimization contracts.
 - [ ] Private field inventory approved: exact fields, purpose, retention and roles for access.
 - [ ] Procedure approved for staff/contact data correction and deactivation.
 - [ ] Audit access and retention approved.
@@ -112,9 +121,20 @@ Evidence snapshot: **2026-10-10 · Chile**. Current stack reaches P1O (#43), rem
 ## Current evidence chain
 The current private-operation sequence is:
 
-`#33 P1F Private Workspace → #34 P1G Conserjería → #35 P1H Shift Log/Handoff → #36 P1I Rounds → #38 P1J Continuity Board → #39 P1K Server Snapshot → #40 P1L Continuity Contracts → #41 P1M Operations Contracts → #42 P1N Anonymous Runtime Smoke → #43 P1O Private API Cache Hardening`
+`#33 P1F Private Workspace → #34 P1G Conserjería → #35 P1H Shift Log/Handoff → #36 P1I Rounds → #38 P1J Continuity Board → #39 P1K Server Snapshot → #40 P1L Continuity Contracts → #41 P1M Operations Contracts → #42 P1N Anonymous Runtime Smoke → #43 P1O Private API Cache Hardening → #44 P1P Readiness Matrix → #45 P1Q Private Boundary → #46 P1R CI Hardening → #47 P1S Build Clean → #48 P1T Cookie Contract → #49 P1U Hermetic Auth → #50 P1V Auth Failure Modes → #51 P1W Runtime Headers → #52 P1X Conflict Contract → #53 P1Y Role HTTP Contract → #54 P1Z Dashboard Privacy → P1AA Staging QA Runner Safety`
 
 All remain stacked/draft unless explicitly changed. Do not merge out of order.
+
+## Staging E2E handoff
+Use `docs/STAGING-E2E-RUNBOOK.md` before any live Auth/HTTP QA. The exact deployment URL must be explicit; credentials remain outside Git; production remains refused by default.
+
+The next meaningful closures are external evidence, not additional assumptions:
+- supported synthetic Administrator staging run;
+- supported Auth confirmation + staging runs for Mayordomía and Conserjería;
+- deployed HTTP 409 evidence;
+- browser/visual/accessibility QA;
+- independent P1E restore;
+- validated PC2 operating procedure.
 
 ## Decision rule
 Production with real data is **BLOCKED** while any mandatory unchecked item above remains open.
