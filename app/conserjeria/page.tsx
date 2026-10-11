@@ -10,6 +10,7 @@ type SessionState={configured:boolean;authenticated:boolean;communityId:string|n
 type Shift={id:string;serviceDate:string;slotCode:string;startsAt:string;endsAt:string;status:ShiftStatus;revision:number;hasAssignee:boolean};
 type Incident={id:string;serviceDate:string;area:string;priority:IncidentPriority;state:string;assignedRole:string|null;revision:number;createdAt:string;updatedAt:string};
 type Dashboard={date:string;communityId:string;role:OperationsRole;summary:{shiftTotal:number;vacant:number;requested:number;confirmed:number;received:number;openIncidents:number;criticalIncidents:number};shifts:Shift[];incidents:Incident[]};
+type AttentionItem={id:string;kind:"coverage"|"handoff"|"incident";rank:number;title:string;detail:string;tone:"danger"|"warn"|"ready";shift?:Shift;incident?:Incident};
 
 const roleLabel:Record<OperationsRole,string>={administrator:"Administración",committee:"Comité",concierge:"Conserjería",mayordomo:"Mayordomía",resident:"Residente"};
 const shiftLabel:Record<ShiftStatus,string>={planned:"Planificado",vacant:"Vacante",requested:"Reemplazo solicitado",confirmed:"Reemplazo confirmado",received:"Relevo recibido"};
@@ -99,6 +100,19 @@ export default function ConciergeDailyPage(){
   return dashboard.shifts.find(shift=>Date.parse(shift.startsAt)>threshold)??null;
  },[dashboard,date,today]);
  const attentionShift=dashboard?.shifts.find(shift=>shift.status==="vacant"||shift.status==="requested")??null;
+ const attentionQueue=useMemo<AttentionItem[]>(()=>{
+  if(!dashboard)return [];
+  const items:AttentionItem[]=[];
+  for(const shift of dashboard.shifts){
+   if(shift.status==="vacant")items.push({id:`coverage-${shift.id}`,kind:"coverage",rank:10,title:`Vacante · ${shift.slotCode}`,detail:`${clock(shift.startsAt)}–${clock(shift.endsAt)} · requiere aviso y cobertura autorizada`,tone:"danger",shift});
+   if(shift.status==="requested")items.push({id:`coverage-${shift.id}`,kind:"coverage",rank:20,title:`Cobertura solicitada · ${shift.slotCode}`,detail:`${clock(shift.startsAt)}–${clock(shift.endsAt)} · pendiente de confirmación por rol autorizado`,tone:"warn",shift});
+   if(shift.status==="confirmed"&&shift.hasAssignee)items.push({id:`handoff-${shift.id}`,kind:"handoff",rank:30,title:`Relevo listo · ${shift.slotCode}`,detail:`${clock(shift.startsAt)}–${clock(shift.endsAt)} · responsable asignado`,tone:"ready",shift});
+  }
+  for(const incident of dashboard.incidents){
+   if(incident.priority==="critical"||incident.priority==="high")items.push({id:`incident-${incident.id}`,kind:"incident",rank:incident.priority==="critical"?0:15,title:`${priorityLabel[incident.priority]} · ${areaLabel[incident.area]||incident.area}`,detail:`Novedad ${incident.state.replaceAll("_"," ")} · seguimiento operativo`,tone:incident.priority==="critical"?"danger":"warn",incident});
+  }
+  return items.sort((a,b)=>a.rank-b.rank).slice(0,6);
+ },[dashboard]);
 
  const post=async(path:string,body:unknown)=>{
   let response=await fetch(path,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)});
@@ -137,7 +151,7 @@ export default function ConciergeDailyPage(){
  };
 
  if(loading)return <main className="concierge-shell concierge-center"><div className="concierge-loader"><span/>Validando turno y sesión privada…</div></main>;
- if(!session?.configured)return <main className="concierge-shell concierge-center"><section className="concierge-access-card"><p className="eyebrow">ORBI LIVING · CONserjería</p><h1>Operación privada no configurada</h1><p>Este corte continúa limitado a staging sintético.</p><Link href="/">Volver al sitio</Link></section></main>;
+ if(!session?.configured)return <main className="concierge-shell concierge-center"><section className="concierge-access-card"><p className="eyebrow">ORBI LIVING · CONSERJERÍA</p><h1>Operación privada no configurada</h1><p>Este corte continúa limitado a staging sintético.</p><Link href="/">Volver al sitio</Link></section></main>;
  if(!session.authenticated)return <main className="concierge-shell concierge-center"><section className="concierge-access-card"><p className="eyebrow">ORBI LIVING · CONSERJERÍA</p><h1>Inicia sesión para abrir el turno</h1><p>La consola diaria reutiliza la sesión privada de ORBI LIVING y nunca expone tokens al navegador.</p><Link className="concierge-primary-link" href="/operaciones">Ir al acceso privado</Link></section></main>;
  if(!allowedRole)return <main className="concierge-shell concierge-center"><section className="concierge-access-card"><p className="eyebrow">ACCESO RESTRINGIDO</p><h1>Este rol no opera la conserjería diaria</h1><p>La vista está limitada a Conserjería, Mayordomía y Administración.</p><Link href="/operaciones">Volver a Operaciones</Link></section></main>;
 
@@ -178,6 +192,11 @@ export default function ConciergeDailyPage(){
      <div className="concierge-card-heading"><div><span className="eyebrow">ATENCIÓN</span><h2>Cobertura pendiente</h2></div></div>
      {attentionShift?<><h3>{attentionShift.slotCode}</h3><p>{clock(attentionShift.startsAt)}–{clock(attentionShift.endsAt)} · {shiftLabel[attentionShift.status]}</p><small>Conserjería informa; la decisión de cobertura permanece en los roles autorizados.</small></>:<p className="concierge-empty">Sin vacantes ni solicitudes pendientes para esta fecha.</p>}
     </article>
+   </section>
+
+   <section className="concierge-panel" aria-label="Cola de atención operativa" style={{maxWidth:1520,margin:"0 auto 14px"}}>
+    <div className="concierge-section-heading"><div><span className="eyebrow">PRIORIDAD OPERATIVA</span><h2>Cola de atención</h2></div><span>{attentionQueue.length} señales</span></div>
+    <div className="concierge-shift-list">{attentionQueue.length?attentionQueue.map(item=><article key={item.id} className="concierge-shift-row"><div className="concierge-shift-time"><strong>{item.kind==="incident"?"!":item.kind==="handoff"?"OK":"→"}</strong><span>{item.kind==="incident"?"novedad":item.kind==="handoff"?"relevo":"cobertura"}</span></div><div className="concierge-shift-copy"><h3>{item.title}</h3><p>{item.detail}</p></div><b className={`shift-chip ${item.tone}`}>{item.kind==="incident"?"Atender":item.kind==="handoff"?"Listo":"Pendiente"}</b><div className="concierge-row-actions">{item.shift&&item.kind==="handoff"&&canHandoff&&<button disabled={busy} onClick={()=>runShiftAction("/api/operations/shifts/handoff",item.shift!,"Relevo recibido y registrado.")}>Recibir</button>}</div></article>):<p className="concierge-empty">Sin señales críticas, coberturas pendientes ni relevos confirmados para esta fecha.</p>}</div>
    </section>
 
    <section className="concierge-columns">
