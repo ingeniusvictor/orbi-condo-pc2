@@ -1,0 +1,49 @@
+import {NextResponse} from "next/server";
+import {operationsDbFetch,requireOperationPermission,trustedOrigin} from "../../../../../lib/server/operations-auth";
+import {isPositiveRevision,isUuid} from "../../../../../data/operations-command-rules";
+import {isPendingCount,isShiftLogCheckStatus,isShiftLogClosureCode} from "../../../../../data/shift-log-rules";
+
+type LogRow={id:string;state:"open"|"closed";revision:number};
+
+type CloseBody={
+ logId?:unknown;
+ expectedRevision?:unknown;
+ closureCode?:unknown;
+ accessControlStatus?:unknown;
+ equipmentStatus?:unknown;
+ openIncidentsReviewed?:unknown;
+ pendingItemsCount?:unknown;
+};
+
+function validClosureCombination(body:Required<Pick<CloseBody,"closureCode"|"accessControlStatus"|"equipmentStatus"|"openIncidentsReviewed"|"pendingItemsCount">>):boolean{
+ if(body.openIncidentsReviewed!==true)return false;
+ if(body.closureCode==="normal")return body.pendingItemsCount===0&&body.accessControlStatus==="normal"&&body.equipmentStatus==="normal";
+ if(body.closureCode==="pending_followup")return body.pendingItemsCount>0;
+ return body.pendingItemsCount>0||body.accessControlStatus==="attention"||body.equipmentStatus==="attention";
+}
+
+export async function POST(req:Request){
+ if(!trustedOrigin(req))return NextResponse.json({error:"Origen no autorizado"},{status:403});
+ const identity=await requireOperationPermission("close_shift_log");
+ if(!identity)return NextResponse.json({error:"No autorizado"},{status:403});
+ let body:CloseBody;
+ try{body=await req.json()}catch{return NextResponse.json({error:"Solicitud inválida"},{status:400})}
+ if(!isUuid(body.logId)||!isPositiveRevision(body.expectedRevision)||!isShiftLogClosureCode(body.closureCode)||!isShiftLogCheckStatus(body.accessControlStatus)||!isShiftLogCheckStatus(body.equipmentStatus)||typeof body.openIncidentsReviewed!=="boolean"||!isPendingCount(body.pendingItemsCount))return NextResponse.json({error:"Entrega de turno inválida"},{status:400});
+ if(!validClosureCombination(body as Required<Pick<CloseBody,"closureCode"|"accessControlStatus"|"equipmentStatus"|"openIncidentsReviewed"|"pendingItemsCount">>))return NextResponse.json({error:"El checklist no es coherente con el resultado de la entrega"},{status:400});
+
+ const community=encodeURIComponent(identity.communityId);
+ const logId=encodeURIComponent(body.logId);
+ const currentResponse=await operationsDbFetch(`shift_logs?select=id,state,revision&id=eq.${logId}&community_id=eq.${community}&limit=1`,identity);
+ if(!currentResponse.ok)return NextResponse.json({error:"No se pudo consultar la bitácora"},{status:502});
+ const current=(await currentResponse.json() as LogRow[])[0];
+ if(!current)return NextResponse.json({error:"Bitácora no encontrada"},{status:404});
+ if(current.revision!==body.expectedRevision)return NextResponse.json({error:"La bitácora cambió; recarga antes de cerrar",currentRevision:current.revision},{status:409});
+ if(current.state!=="open")return NextResponse.json({error:"La bitácora ya está cerrada"},{status:409});
+
+ const update={state:"closed",closed_by:identity.id,closed_at:new Date().toISOString(),closure_code:body.closureCode,access_control_status:body.accessControlStatus,equipment_status:body.equipmentStatus,open_incidents_reviewed:body.openIncidentsReviewed,pending_items_count:body.pendingItemsCount,updated_by:identity.id};
+ const updateResponse=await operationsDbFetch(`shift_logs?id=eq.${logId}&community_id=eq.${community}&state=eq.open&revision=eq.${body.expectedRevision}&select=id,state,closed_at,closure_code,access_control_status,equipment_status,open_incidents_reviewed,pending_items_count,revision,updated_at`,identity,{method:"PATCH",headers:{"Content-Type":"application/json","Prefer":"return=representation"},body:JSON.stringify(update)});
+ if(!updateResponse.ok)return NextResponse.json({error:"No se pudo cerrar la bitácora"},{status:updateResponse.status===409?409:400});
+ const rows=await updateResponse.json() as unknown[];
+ if(rows.length!==1)return NextResponse.json({error:"Conflicto de edición; recarga la bitácora"},{status:409});
+ return NextResponse.json({ok:true,log:rows[0]},{headers:{"Cache-Control":"no-store"}});
+}
