@@ -17,7 +17,7 @@ Workspace diario que reutiliza exclusivamente:
 
 No introduce escrituras directas a Supabase desde el navegador.
 
-## Alcance funcional del primer corte
+## Alcance funcional
 - fecha operativa seleccionable, con acceso rápido a Hoy;
 - resumen de turnos, vacantes, reemplazos solicitados e incidencias abiertas;
 - identificación del turno actual para la fecha de hoy;
@@ -28,6 +28,16 @@ No introduce escrituras directas a Supabase desde el navegador.
 - reporte de vacante cuando el rol posee `report_shift_gap`;
 - recepción de relevo únicamente sobre turno `confirmed` con responsable y permiso `confirm_shift_handoff`;
 - registro estructurado de incidencia cuando el rol posee `report_incident`.
+
+### Cola de atención operativa
+El segundo incremento P1G agrega una cola derivada **sin tablas, estados ni privilegios nuevos**. Se calcula únicamente con el dashboard ya autorizado y prioriza:
+1. incidencias `critical`;
+2. turnos `vacant`;
+3. incidencias `high`;
+4. turnos `requested`;
+5. relevos `confirmed` con responsable asignado.
+
+La cola muestra como máximo seis señales y sólo expone datos ya visibles para el rol. Para un relevo confirmado, la acción `Recibir` aparece únicamente cuando el permiso `confirm_shift_handoff` ya está presente. Una incidencia de alta prioridad no obtiene controles administrativos adicionales.
 
 ## Roles
 La UI privada admite `administrator`, `mayordomo` y `concierge`.
@@ -49,6 +59,7 @@ Mayordomía y Administración conservan sus permisos existentes de P1F, pero P1G
 - toda mutación usa endpoints server-side existentes;
 - los turnos continúan protegidos por RLS, transición de dominio y `expectedRevision`;
 - el catálogo privado de personal permanece fuera de la vista de Conserjería;
+- la cola de atención es una proyección cliente de datos ya autorizados, no una nueva fuente de datos;
 - la navegación pública flotante se excluye de `/conserjeria`.
 
 ## Responsive
@@ -59,8 +70,8 @@ La nueva vista tiene estilos propios y safe-area inferior. Objetivos de QA:
 - 1920×1080.
 
 ## Gates antes de considerar el corte completo
-- `npm run check` GREEN;
-- Preview Vercel READY;
+- `npm run check` GREEN en el head actual;
+- Preview Vercel READY en el head actual;
 - acceso sin sesión deriva al acceso privado sin filtrar datos;
 - sesión Administración/Mayordomía/Conserjería resuelve correctamente la vista;
 - acciones operativas permitidas funcionan con `expectedRevision`;
