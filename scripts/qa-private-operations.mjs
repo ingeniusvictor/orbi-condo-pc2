@@ -39,6 +39,12 @@ async function request(path,{method="GET",body}={}){
  return {response,payload};
 }
 function assert(condition,message){if(!condition)throw new Error(message)}
+function assertSafeContinuityPayload(payload){
+ const serialized=JSON.stringify(payload??{}).toLowerCase();
+ for(const forbidden of ["assignee_staff_id","actor_id","staff_private","display_name"]){
+  assert(!serialized.includes(forbidden),`continuity payload leaked forbidden field ${forbidden}`);
+ }
+}
 
 async function main(){
  console.log(`ORBI LIVING private operations QA · ${baseUrl.origin} · ${date}`);
@@ -50,12 +56,33 @@ async function main(){
  const session=await request("/api/auth/session");
  assert(session.response.status===200&&session.payload?.authenticated===true,"session was not authenticated after login");
  assert(session.payload?.role===expectedRole,`expected role ${expectedRole}, received ${session.payload?.role}`);
- console.log(`PASS session authenticated · role=${session.payload.role} · permissions=${session.payload.permissions?.length??0}`);
+ const permissions=session.payload?.permissions??[];
+ console.log(`PASS session authenticated · role=${session.payload.role} · permissions=${permissions.length}`);
 
  const dashboard=await request(`/api/operations/dashboard?date=${encodeURIComponent(date)}`);
  assert(dashboard.response.status===200,"private dashboard did not return 200");
  assert(Array.isArray(dashboard.payload?.shifts),"dashboard shifts missing");
  console.log(`PASS dashboard RLS read · shifts=${dashboard.payload.shifts.length} · incidents=${dashboard.payload.incidents?.length??0}`);
+
+ if(permissions.includes("view_shift_log")){
+  const shiftLog=await request(`/api/operations/shift-log?date=${encodeURIComponent(date)}`);
+  assert(shiftLog.response.status===200&&Array.isArray(shiftLog.payload?.logs),"shift-log read failed");
+  console.log(`PASS shift-log RLS read · logs=${shiftLog.payload.logs.length}`);
+ }
+ if(permissions.includes("view_operational_round")){
+  const rounds=await request(`/api/operations/rounds?date=${encodeURIComponent(date)}`);
+  assert(rounds.response.status===200&&Array.isArray(rounds.payload?.rounds),"operational rounds read failed");
+  console.log(`PASS operational rounds RLS read · rounds=${rounds.payload.rounds.length}`);
+ }
+ if(["view_shift_schedule","view_shift_log","view_operational_round"].every(permission=>permissions.includes(permission))){
+  const continuity=await request(`/api/operations/continuity?date=${encodeURIComponent(date)}`);
+  assert(continuity.response.status===200,"continuity snapshot did not return 200");
+  assert(["blocked","critical","attention","clear"].includes(continuity.payload?.status?.tone),"continuity status tone invalid");
+  assert(Array.isArray(continuity.payload?.items),"continuity items missing");
+  assert(Number.isInteger(continuity.payload?.metrics?.technicalBlockers),"continuity blocker metric missing");
+  assertSafeContinuityPayload(continuity.payload);
+  console.log(`PASS server continuity snapshot · tone=${continuity.payload.status.tone} · items=${continuity.payload.items.length}`);
+ }
 
  const refresh=await request("/api/auth/refresh",{method:"POST"});
  assert(refresh.response.status===200,`refresh expected 200, received ${refresh.response.status}`);
@@ -92,6 +119,10 @@ async function main(){
  const finalSession=await request("/api/auth/session");
  assert(finalSession.response.status===200&&finalSession.payload?.authenticated===false,"session remained authenticated after logout");
  console.log("PASS logout cleared browser session");
+
+ const anonymousContinuity=await request(`/api/operations/continuity?date=${encodeURIComponent(date)}`);
+ assert(anonymousContinuity.response.status===403,`anonymous continuity expected 403, received ${anonymousContinuity.response.status}`);
+ console.log("PASS continuity denies anonymous access with HTTP 403");
  console.log("QA GREEN");
 }
 
