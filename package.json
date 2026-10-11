@@ -9,7 +9,8 @@
     "typecheck": "tsc --noEmit",
     "test:continuity": "node --experimental-strip-types scripts/test-continuity-model.mjs",
     "test:operations-domain": "node --experimental-strip-types scripts/test-operations-domain.mjs",
-    "check": "npm run typecheck && npm run test:continuity && npm run test:operations-domain && npm run build",
+    "test:anonymous-security": "node scripts/test-anonymous-security-smoke.mjs",
+    "check": "npm run typecheck && npm run test:continuity && npm run test:operations-domain && npm run build && npm run test:anonymous-security",
     "qa:operations": "node scripts/qa-private-operations.mjs"
   },
   "dependencies": {
