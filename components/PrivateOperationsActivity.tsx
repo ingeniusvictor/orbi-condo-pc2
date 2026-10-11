@@ -84,6 +84,7 @@ export default function PrivateOperationsActivity(){
     <div><p style={{margin:0,color:"#77e6e1",fontSize:12,letterSpacing:1.5}}>BITÁCORA PRIVADA</p><h2 style={{margin:"5px 0 0"}}>Actividad operativa reciente</h2></div>
     <div style={{display:"flex",alignItems:"center",justifyContent:"flex-end",gap:10,flexWrap:"wrap"}}>
      <Link href="/conserjeria" style={{display:"inline-flex",alignItems:"center",minHeight:38,padding:"8px 12px",border:"1px solid rgba(95,232,223,.28)",borderRadius:10,background:"rgba(20,111,111,.18)",color:"#d9fffc",textDecoration:"none",fontSize:12,fontWeight:800}}>Abrir Conserjería</Link>
+     <Link href="/conserjeria/relevo" style={{display:"inline-flex",alignItems:"center",minHeight:38,padding:"8px 12px",border:"1px solid rgba(117,168,255,.28)",borderRadius:10,background:"rgba(72,97,178,.16)",color:"#e0e7ff",textDecoration:"none",fontSize:12,fontWeight:800}}>Preparar relevo</Link>
      <small style={{color:"#8eabb7"}}>Rol: {role||"operativo"} · actualización automática</small>
     </div>
    </div>
