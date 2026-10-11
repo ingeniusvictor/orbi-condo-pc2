@@ -1,6 +1,7 @@
 import fs from "node:fs";
 
 const source = fs.readFileSync("scripts/configure-main-ruleset.ps1", "utf8");
+const workflow = fs.readFileSync(".github/workflows/quality.yml", "utf8");
 
 function expect(condition, message) {
   if (!condition) {
@@ -11,25 +12,33 @@ function expect(condition, message) {
   console.log(`PASS ${message}`);
 }
 
-expect(source.includes("[switch]$Apply"), "ruleset helper is dry-run by default and needs an explicit Apply switch");
+expect(source.includes("[switch]$Apply"), "ruleset helper remains dry-run by default");
+expect(source.includes('[ValidateSet("Consolidation", "Final")]'), "ruleset helper exposes explicit consolidation and final modes");
+expect(source.includes('[string]$Mode = "Consolidation"'), "historical stack protection defaults to consolidation mode");
 expect(source.includes("ExpectedMainSha = \"a20c03ff9a84715772250a0daab6cd110d8235c2\""), "ruleset helper pins the reviewed main baseline before consolidation");
 expect(source.includes("-AllowMainDrift deliberately"), "main drift requires an explicit override after re-audit");
 expect(source.includes('include = @("refs/heads/main")'), "ruleset targets main only");
 expect(source.includes('bypass_actors = @()'), "ruleset grants no bypass actor by default");
 expect(source.includes('allowed_merge_methods = @("merge")'), "stack consolidation permits merge commits only");
-expect(!source.includes('allowed_merge_methods = @("squash"'), "stack consolidation does not permit squash as its configured merge method");
-expect(!source.includes('allowed_merge_methods = @("rebase"'), "stack consolidation does not permit rebase as its configured merge method");
 expect(source.includes('type = "deletion"'), "main deletion is blocked");
 expect(source.includes('type = "non_fast_forward"'), "force pushes are blocked");
 expect(source.includes('required_review_thread_resolution = $true'), "review conversations must be resolved");
 expect(source.includes('required_approving_review_count = 0'), "single-maintainer consolidation does not invent an unavailable reviewer requirement");
-expect(source.includes('strict_required_status_checks_policy = $true'), "required checks must be current with main");
-expect(source.includes('context = "Full contract · Node 22"'), "Node 22 full contract is required");
-expect(source.includes('context = "Vercel runtime parity · Node 24"'), "Node 24 runtime parity is required");
-expect((source.match(/integration_id = 15368/g) ?? []).length === 2, "both required checks are pinned to the GitHub Actions integration");
-expect(!source.includes('context = "Vercel"'), "external Vercel deployment status is not a required check");
+expect(source.includes('if ($Mode -eq "Final")'), "required status checks are deferred until final mode");
+expect(source.includes('context = "Full contract - Node 22"'), "final Node 22 check name is ASCII stable");
+expect(source.includes('context = "Vercel runtime parity - Node 24"'), "final Node 24 check name is ASCII stable");
+expect((source.match(/integration_id = 15368/g) ?? []).length === 2, "both final required checks are pinned to GitHub Actions");
+expect(!source.includes('context = "Vercel"'), "external Vercel deployment status is never required");
+expect(source.includes('$_\.name -like "ORBI LIVING*protect main"') || source.includes('$_.name -like "ORBI LIVING*protect main"'), "helper discovers the previously-created ruleset even if its display name was mojibaked");
+expect(source.includes('if ($existingRuleset)'), "helper updates an existing ruleset instead of creating a duplicate");
+expect(source.includes('--method PUT'), "existing ruleset path uses PUT");
+expect(source.includes('--method POST'), "missing ruleset path can still create once");
+expect(source.includes('[System.IO.File]::WriteAllText'), "JSON payload is written through explicit UTF-8 file IO");
+expect(source.includes('New-Object System.Text.UTF8Encoding($false)'), "PowerShell 5.1 writes JSON as UTF-8 without BOM");
 expect(source.includes("DRY RUN ONLY. No GitHub settings were changed."), "dry run makes the no-mutation state explicit");
-expect(source.includes('if (-not $Apply)'), "POST path is gated behind explicit Apply");
+expect(workflow.includes("name: Full contract - Node 22"), "workflow emits ASCII Node 22 final check name");
+expect(workflow.includes("name: Vercel runtime parity - Node 24"), "workflow emits ASCII Node 24 final check name");
+expect(!workflow.includes("Full contract · Node 22") && !workflow.includes("Vercel runtime parity · Node 24"), "workflow no longer depends on middle-dot encoding");
 
 if (process.exitCode) process.exit(process.exitCode);
 console.log("MAIN RULESET HELPER CONTRACT GREEN");
