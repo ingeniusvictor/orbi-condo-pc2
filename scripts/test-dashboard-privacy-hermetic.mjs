@@ -92,10 +92,14 @@ function assertPrivate(response,label){
  assert.equal(response.headers.get("x-content-type-options"),"nosniff",`${label} nosniff`);
  assert.equal(response.headers.get("access-control-allow-origin"),null,`${label} no CORS opt-in`);
 }
-function assertNoPrivateAssigneeLeak(result,label){
- assert.equal(result.text.includes(privateStaffId),false,`${label} must not expose assignee_staff_id`);
+function assertShiftProjection(result,label,{privateStaffIdAllowedElsewhere=false}={}){
+ const shift=result.payload?.shifts?.[0];
+ assert.ok(shift,`${label} should include synthetic shift`);
+ assert.equal(Object.prototype.hasOwnProperty.call(shift,"assignee_staff_id"),false,`${label} must not expose assignee_staff_id`);
+ assert.equal(Object.prototype.hasOwnProperty.call(shift,"assigneeStaffId"),false,`${label} must not expose assigneeStaffId`);
  assert.equal(result.text.includes("assignee_staff_id"),false,`${label} must not expose private DB field name`);
- assert.equal(result.payload?.shifts?.[0]?.hasAssignee,true,`${label} may expose only assignment presence`);
+ assert.equal(shift.hasAssignee,true,`${label} may expose only assignment presence in shift projection`);
+ if(!privateStaffIdAllowedElsewhere)assert.equal(result.text.includes(privateStaffId),false,`${label} must not expose private staff id anywhere`);
 }
 
 async function main(){
@@ -111,7 +115,7 @@ async function main(){
  assert.equal(tablesFor("concierge").includes("shift_events"),true,"concierge may receive structured operational shift activity");
  assert.equal(tablesFor("concierge").includes("incident_events"),true,"concierge may receive structured incident activity");
  assert.equal(concierge.payload?.recentActivity?.length,2);
- assertNoPrivateAssigneeLeak(concierge,"concierge dashboard");
+ assertShiftProjection(concierge,"concierge dashboard");
  assert.equal(concierge.text.includes("Suplente Sintético Privado"),false,"concierge must not receive private staff display name");
  assertPrivate(concierge.response,"concierge dashboard");
  console.log("PASS concierge dashboard omits staff_private while retaining structured operational activity");
@@ -121,11 +125,12 @@ async function main(){
  assert.equal(mayordomo.payload?.role,"mayordomo");
  assert.equal(tablesFor("mayordomo").includes("staff_private"),true,"mayordomo may query eligible private staff catalog");
  assert.equal(mayordomo.payload?.staff?.length,1);
+ assert.equal(mayordomo.payload?.staff?.[0]?.id,privateStaffId,"mayordomo may receive the eligible staff catalog identifier");
  assert.equal(mayordomo.payload?.staff?.[0]?.displayName,"Suplente Sintético Privado");
  assert.equal(mayordomo.payload?.staff?.[0]?.staffFunction,"concierge");
- assertNoPrivateAssigneeLeak(mayordomo,"mayordomo dashboard");
+ assertShiftProjection(mayordomo,"mayordomo dashboard",{privateStaffIdAllowedElsewhere:true});
  assertPrivate(mayordomo.response,"mayordomo dashboard");
- console.log("PASS mayordomo receives only the eligible staff projection while shift assignee IDs remain hidden");
+ console.log("PASS mayordomo receives eligible staff catalog while shift projection still hides assignee linkage");
 
  const committee=await dashboard("committee");
  assert.equal(committee.response.status,200);
@@ -135,7 +140,7 @@ async function main(){
  assert.equal(tablesFor("committee").includes("staff_private"),false,"committee must not query staff_private");
  assert.equal(tablesFor("committee").includes("shift_events"),false,"committee must not query operational shift events");
  assert.equal(tablesFor("committee").includes("incident_events"),false,"committee must not query incident events");
- assertNoPrivateAssigneeLeak(committee,"committee dashboard");
+ assertShiftProjection(committee,"committee dashboard");
  assertPrivate(committee.response,"committee dashboard");
  console.log("PASS committee receives schedule summary without private staff catalog or operational event stream");
 
