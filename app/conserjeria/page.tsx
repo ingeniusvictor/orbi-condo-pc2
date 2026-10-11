@@ -4,6 +4,7 @@ import Link from "next/link";
 import {FormEvent,useCallback,useEffect,useMemo,useState} from "react";
 import ConciergeShiftLog from "../../components/ConciergeShiftLog";
 import ConciergeOperationalRounds from "../../components/ConciergeOperationalRounds";
+import ConciergeContinuityBoard from "../../components/ConciergeContinuityBoard";
 
 type OperationsRole="administrator"|"committee"|"concierge"|"mayordomo"|"resident";
 type ShiftStatus="planned"|"vacant"|"requested"|"confirmed"|"received";
@@ -195,6 +196,8 @@ export default function ConciergeDailyPage(){
      {attentionShift?<><h3>{attentionShift.slotCode}</h3><p>{clock(attentionShift.startsAt)}–{clock(attentionShift.endsAt)} · {shiftLabel[attentionShift.status]}</p><small>Conserjería informa; la decisión de cobertura permanece en los roles autorizados.</small></>:<p className="concierge-empty">Sin vacantes ni solicitudes pendientes para esta fecha.</p>}
     </article>
    </section>
+
+   <ConciergeContinuityBoard date={date} shifts={dashboard.shifts} incidents={dashboard.incidents} permissions={permissions}/>
 
    <section className="concierge-panel" aria-label="Cola de atención operativa" style={{maxWidth:1520,margin:"0 auto 14px"}}>
     <div className="concierge-section-heading"><div><span className="eyebrow">PRIORIDAD OPERATIVA</span><h2>Cola de atención</h2></div><span>{attentionQueue.length} señales</span></div>
