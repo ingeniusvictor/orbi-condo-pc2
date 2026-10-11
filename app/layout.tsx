@@ -12,6 +12,7 @@ import "./pocket.css";
 import "./maintenance-alerts.css";
 import "./governance-voice.css";
 import "./private-operations.css";
+import "./concierge-daily.css";
 
 export const metadata:Metadata={
  title:"Parque Ciudadano II · ORBI LIVING",
