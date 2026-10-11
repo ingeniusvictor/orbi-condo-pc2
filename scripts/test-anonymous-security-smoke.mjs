@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import {spawn} from "node:child_process";
 
-const host="127.0.0.1";
+const host="localhost";
 const port=Number(process.env.ORBI_QA_LOCAL_PORT||3219);
 const base=`http://${host}:${port}`;
 const date="2026-10-10";
@@ -36,6 +36,16 @@ async function json(path,options){
  return {response,payload};
 }
 function hasNoStore(response){return (response.headers.get("cache-control")||"").includes("no-store")}
+function assertClearingCookie(raw,name){
+ const lower=raw.toLowerCase();
+ assert.match(raw,new RegExp(`^${name}=;`,"i"),`${name} should be cleared without exposing a value`);
+ assert.equal(lower.includes("httponly"),true,`${name} should be HttpOnly`);
+ assert.equal(lower.includes("secure"),true,`${name} should be Secure in production runtime`);
+ assert.equal(lower.includes("samesite=strict"),true,`${name} should be SameSite=Strict`);
+ assert.equal(lower.includes("path=/"),true,`${name} should be scoped to Path=/`);
+ assert.equal(lower.includes("max-age=0"),true,`${name} should be cleared with Max-Age=0`);
+ assert.equal(lower.includes("domain="),false,`${name} should remain host-only`);
+}
 
 async function main(){
  await waitForServer();
@@ -81,10 +91,25 @@ async function main(){
  for(const path of privateWrites){
   const result=await json(path,{method:"POST",headers:{"Content-Type":"application/json","Origin":base},body:"{}"});
   assert.equal(result.response.status,403,`${path} should return 403 before any mutation`);
-  assert.equal(["Origen no autorizado","No autorizado"].includes(result.payload?.error),true,`${path} should be stopped by origin/auth barrier`);
+  assert.equal(result.payload?.error,"No autorizado",`${path} with trusted Origin should reach auth barrier`);
   assert.equal(hasNoStore(result.response),true,`${path} should always be private no-store`);
  }
- console.log("PASS representative private write APIs deny anonymous access with private no-store");
+ console.log("PASS trusted-Origin private writes reach auth barrier and deny anonymous access");
+
+ const logout=await json("/api/auth/logout",{method:"POST",headers:{"Origin":base}});
+ assert.equal(logout.response.status,200,"logout should be locally idempotent without backend configuration");
+ assert.equal(logout.payload?.ok,true);
+ assert.equal(logout.payload?.serverSessionRevoked,false);
+ assert.equal(hasNoStore(logout.response),true);
+ assert.equal(typeof logout.response.headers.getSetCookie,"function","Node runtime should expose individual Set-Cookie headers");
+ const setCookies=logout.response.headers.getSetCookie();
+ const sessionCookie=setCookies.find(value=>value.toLowerCase().startsWith("orbi_session="));
+ const refreshCookie=setCookies.find(value=>value.toLowerCase().startsWith("orbi_refresh="));
+ assert.ok(sessionCookie,"logout should clear orbi_session");
+ assert.ok(refreshCookie,"logout should clear orbi_refresh");
+ assertClearingCookie(sessionCookie,"orbi_session");
+ assertClearingCookie(refreshCookie,"orbi_refresh");
+ console.log("PASS logout clears both host-only session cookies with HttpOnly + Secure + SameSite=Strict");
 
  for(const path of ["/operaciones","/conserjeria"]){
   const response=await fetch(`${base}${path}`,{redirect:"manual"});
