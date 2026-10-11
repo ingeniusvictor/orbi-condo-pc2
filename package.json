@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "typecheck": "tsc --noEmit",
-    "check": "npm run typecheck && npm run build",
+    "test:continuity": "node --experimental-strip-types scripts/test-continuity-model.mjs",
+    "check": "npm run typecheck && npm run test:continuity && npm run build",
     "qa:operations": "node scripts/qa-private-operations.mjs"
   },
   "dependencies": {
