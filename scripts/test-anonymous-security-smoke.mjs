@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import {spawn} from "node:child_process";
 
-const host="127.0.0.1";
+const host="localhost";
 const port=Number(process.env.ORBI_QA_LOCAL_PORT||3219);
 const base=`http://${host}:${port}`;
 const date="2026-10-10";
@@ -91,10 +91,10 @@ async function main(){
  for(const path of privateWrites){
   const result=await json(path,{method:"POST",headers:{"Content-Type":"application/json","Origin":base},body:"{}"});
   assert.equal(result.response.status,403,`${path} should return 403 before any mutation`);
-  assert.equal(["Origen no autorizado","No autorizado"].includes(result.payload?.error),true,`${path} should be stopped by origin/auth barrier`);
+  assert.equal(result.payload?.error,"No autorizado",`${path} with trusted Origin should reach auth barrier`);
   assert.equal(hasNoStore(result.response),true,`${path} should always be private no-store`);
  }
- console.log("PASS representative private write APIs deny anonymous access with private no-store");
+ console.log("PASS trusted-Origin private writes reach auth barrier and deny anonymous access");
 
  const logout=await json("/api/auth/logout",{method:"POST",headers:{"Origin":base}});
  assert.equal(logout.response.status,200,"logout should be locally idempotent without backend configuration");
