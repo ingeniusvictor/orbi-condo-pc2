@@ -63,12 +63,13 @@ async function main(){
   assert.equal(result.payload?.error,"No autorizado",`${path} should not disclose backend detail`);
   assert.equal(hasNoStore(result.response),true,`${path} should be no-store`);
  }
- console.log("PASS all private read APIs deny anonymous access with HTTP 403");
+ console.log("PASS all private read APIs deny anonymous access with HTTP 403 + no-store");
 
  const originProbe=await json("/api/operations/shifts/report-gap",{method:"POST",headers:{"Content-Type":"application/json"},body:"{}"});
  assert.equal(originProbe.response.status,403);
  assert.equal(originProbe.payload?.error,"Origen no autorizado");
- console.log("PASS write path rejects missing Origin before auth or mutation");
+ assert.equal(hasNoStore(originProbe.response),true,"origin rejection should be private no-store");
+ console.log("PASS write path rejects missing Origin with private no-store");
 
  const privateWrites=[
   "/api/operations/shifts/report-gap",
@@ -81,9 +82,9 @@ async function main(){
   const result=await json(path,{method:"POST",headers:{"Content-Type":"application/json","Origin":base},body:"{}"});
   assert.equal(result.response.status,403,`${path} should return 403 before any mutation`);
   assert.equal(["Origen no autorizado","No autorizado"].includes(result.payload?.error),true,`${path} should be stopped by origin/auth barrier`);
-  assert.equal([400,409,502].includes(result.response.status),false,`${path} must not reach validation or persistence`);
+  assert.equal(hasNoStore(result.response),true,`${path} should always be private no-store`);
  }
- console.log("PASS representative private write APIs stop at origin/auth barrier before mutation");
+ console.log("PASS representative private write APIs deny anonymous access with private no-store");
 
  for(const path of ["/operaciones","/conserjeria"]){
   const response=await fetch(`${base}${path}`,{redirect:"manual"});
