@@ -10,6 +10,7 @@ permissions:
 
 jobs:
   check:
+    name: Full contract · Node 22
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -24,5 +25,24 @@ jobs:
           cache-dependency-path: package.json
       - name: Install dependencies
         run: npm install --no-audit --no-fund
-      - name: Typecheck and build
+      - name: Typecheck and full contract suite
         run: npm run check
+
+  runtime-parity-node24:
+    name: Vercel runtime parity · Node 24
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Setup Node 24
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: package.json
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+      - name: Build and runtime parity smoke
+        run: npm run typecheck && npm run build && npm run test:build-clean && npm run test:auth-hermetic && npm run test:anonymous-security
