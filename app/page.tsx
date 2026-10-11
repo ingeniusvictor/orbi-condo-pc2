@@ -15,6 +15,7 @@ import OrbiFinance from "../components/OrbiFinance";
 import FinanceMonthlyComparison from "../components/FinanceMonthlyComparison";
 import FinanceEditWorkspace from "../components/FinanceEditWorkspace";
 import FinanceImportPreview from "../components/FinanceImportPreview";
+import WorkforceOverview from "../components/WorkforceOverview";
 import EvidenceHistory from "../components/EvidenceHistory";
 import EvidenceWorkflowDemo from "../components/EvidenceWorkflowDemo";
 import CertificationIcon from "../components/CertificationIcon";
@@ -87,6 +88,7 @@ export default function Home(){
  <FinanceMonthlyComparison/>
  <FinanceEditWorkspace/>
  <FinanceImportPreview/>
+ <WorkforceOverview/>
  <CommunityMap/>
  <PocketExperience/>
  
