@@ -1,8 +1,8 @@
 import {NextResponse} from "next/server";
-import {OPERATIONS_REFRESH_COOKIE,OPERATIONS_SESSION_COOKIE,operationsAuthFetch,operationsBackendConfigured,trustedOrigin} from "../../../../lib/server/operations-auth";
+import {operationsAuthFetch,operationsBackendConfigured,trustedOrigin} from "../../../../lib/server/operations-auth";
+import {setOperationsRefreshCookie,setOperationsSessionCookie} from "../../../../lib/server/operations-cookies";
 
 const noStore={"Cache-Control":"private, no-store"};
-const cookieBase={httpOnly:true,secure:process.env.NODE_ENV==="production",sameSite:"strict" as const,path:"/"};
 
 export async function POST(req:Request){
  if(!trustedOrigin(req))return NextResponse.json({error:"Origen no autorizado"},{status:403,headers:noStore});
@@ -23,9 +23,9 @@ export async function POST(req:Request){
  if(typeof session.access_token!=="string"||!session.access_token||typeof session.refresh_token!=="string"||!session.refresh_token)return NextResponse.json({error:"Sesión inválida"},{status:502,headers:noStore});
  const expires=typeof session.expires_in==="number"&&Number.isFinite(session.expires_in)?Math.max(60,Math.min(session.expires_in,86_400)):3600;
  const response=NextResponse.json({ok:true},{headers:noStore});
- response.cookies.set(OPERATIONS_SESSION_COOKIE,session.access_token,{...cookieBase,maxAge:expires});
+ setOperationsSessionCookie(response,session.access_token,expires);
  // Refresh token deliberately uses a browser-session HttpOnly cookie in this staging cut.
  // Production persistence/remember-me policy must be an explicit product/security decision.
- response.cookies.set(OPERATIONS_REFRESH_COOKIE,session.refresh_token,cookieBase);
+ setOperationsRefreshCookie(response,session.refresh_token);
  return response;
 }
