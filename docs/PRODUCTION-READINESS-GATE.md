@@ -3,7 +3,7 @@
 ## Purpose
 This checklist is the hard boundary between the current synthetic staging system and any future use of real condominium information. **No real resident, worker, phone, RUT, plate, contract or private incident narrative may be loaded until every mandatory gate is explicitly closed.**
 
-Evidence snapshot: **2026-10-10/11 · Chile**. Current stack reaches **P1AC (#57 candidate)**, remains draft/stacked and **SYNTHETIC STAGING ONLY**.
+Evidence snapshot: **2026-10-10/11 · Chile**. Current stack reaches **P1AD (#58 candidate)**, remains draft/stacked and **SYNTHETIC STAGING ONLY**.
 
 ## G0 · Product scope
 - [x] ORBI LIVING operational scope documented: shifts, coverage, handoff, incidents, escalation and administrative traceability.
@@ -116,24 +116,24 @@ Evidence snapshot: **2026-10-10/11 · Chile**. Current stack reaches **P1AC (#57
 - [ ] Production secrets created independently from staging.
 - [x] Vercel environment scopes reviewed read-only: current staging `SUPABASE_URL`, `SUPABASE_ANON_KEY` and `ORBI_COMMUNITY_ID` are Preview-only and Vercel reports no hidden Production env variables. See `docs/VERCEL-PREVIEW-ISOLATION.md`.
 - [x] Vercel Git binding verified: project `orbi-condo-pc2` / team `orbi4` points to `ingeniusvictor/orbi-condo-pc2`.
-- [ ] Runtime parity decision: Vercel project currently reports Node 24.x while CI certifies Node 22; align or explicitly approve the difference before production.
+- [x] Runtime parity certified in Quality Gate #217: full contract remains GREEN on Node 22 and build/Auth/runtime security remain GREEN on Node 24, matching the major currently configured in Vercel.
 - [ ] Production region/data residency decision documented.
 - [ ] Monitoring/error handling strategy enabled.
 - [ ] Rollback procedure for application and database changes approved.
 
-Historical Vercel Production deployments from older `main` commits exist, but they predate the current P1 private-operations stack and are **not** evidence that P1F–P1AB has been promoted or approved for production.
+Historical Vercel Production deployments from older `main` commits exist, but they predate the current P1 private-operations stack and are **not** evidence that P1F–P1AD has been promoted or approved for production.
 
 ## Current evidence chain
 The current private-operation sequence is:
 
-`#33 P1F Private Workspace → #34 P1G Conserjería → #35 P1H Shift Log/Handoff → #36 P1I Rounds → #38 P1J Continuity Board → #39 P1K Server Snapshot → #40 P1L Continuity Contracts → #41 P1M Operations Contracts → #42 P1N Anonymous Runtime Smoke → #43 P1O Private API Cache Hardening → #44 P1P Readiness Matrix → #45 P1Q Private Boundary → #46 P1R CI Hardening → #47 P1S Build Clean → #48 P1T Cookie Contract → #49 P1U Hermetic Auth → #50 P1V Auth Failure Modes → #51 P1W Runtime Headers → #52 P1X Conflict Contract → #53 P1Y Role HTTP Contract → #54 P1Z Dashboard Privacy → #55 P1AA Staging QA Runner Safety → #56 P1AB Manual Staging E2E → P1AC Preview Infrastructure Isolation`
+`#33 P1F Private Workspace → #34 P1G Conserjería → #35 P1H Shift Log/Handoff → #36 P1I Rounds → #38 P1J Continuity Board → #39 P1K Server Snapshot → #40 P1L Continuity Contracts → #41 P1M Operations Contracts → #42 P1N Anonymous Runtime Smoke → #43 P1O Private API Cache Hardening → #44 P1P Readiness Matrix → #45 P1Q Private Boundary → #46 P1R CI Hardening → #47 P1S Build Clean → #48 P1T Cookie Contract → #49 P1U Hermetic Auth → #50 P1V Auth Failure Modes → #51 P1W Runtime Headers → #52 P1X Conflict Contract → #53 P1Y Role HTTP Contract → #54 P1Z Dashboard Privacy → #55 P1AA Staging QA Runner Safety → #56 P1AB Manual Staging E2E → #57 P1AC Preview Infrastructure Isolation → P1AD Node Runtime Parity`
 
 All remain stacked/draft unless explicitly changed. Do not merge out of order.
 
 ## Staging E2E handoff
 Use `docs/STAGING-E2E-RUNBOOK.md` before any live Auth/HTTP QA. The exact deployment URL must be explicit; credentials remain outside Git; production remains refused by default.
 
-Infrastructure-scope evidence is recorded in `docs/VERCEL-PREVIEW-ISOLATION.md`. That audit is metadata-only and does not approve production credentials, deployment promotion or production data.
+Infrastructure-scope and runtime-parity evidence are recorded in `docs/VERCEL-PREVIEW-ISOLATION.md`. Those audits do not approve production credentials, deployment promotion or production data.
 
 The next meaningful closures are external evidence, not additional assumptions:
 - supported synthetic Administrator staging run;
@@ -142,7 +142,7 @@ The next meaningful closures are external evidence, not additional assumptions:
 - browser/visual/accessibility QA;
 - independent P1E restore;
 - validated PC2 operating procedure;
-- production runtime parity/region/security decisions.
+- production region/monitoring/rollback decisions.
 
 ## Decision rule
 Production with real data is **BLOCKED** while any mandatory unchecked item above remains open.

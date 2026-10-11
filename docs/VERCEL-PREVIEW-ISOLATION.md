@@ -53,32 +53,43 @@ P1AB supports an optional Automation Bypass only for protected ORBI LIVING `.ver
 ## Existing Production deployment history
 The Vercel project already contains historical Production deployments from the repository `main` branch, predating the current P1 private-operations stack.
 
-That history does **not** mean P1F–P1AB has been promoted to production. The current private-operations work remains stacked/draft and Preview-only.
+That history does **not** mean P1F–P1AD has been promoted to production. The current private-operations work remains stacked/draft and Preview-only.
 
 Do not use historical Production deployments as evidence for current P1 readiness, Auth, RLS or privacy gates.
 
-## Runtime parity observation
-Vercel project metadata currently reports `nodeVersion: 24.x`, while GitHub Quality Gate explicitly runs the application on Node 22.
+## Runtime parity certification
+Vercel project metadata currently reports `nodeVersion: 24.x`. GitHub Quality Gate historically certified the application on Node 22.
 
-Both environments currently build successfully, but exact runtime parity has not been formally established. This remains an infrastructure-readiness item before production approval.
+P1AD adds a second independent Quality Gate job for Node 24 while preserving the complete Node 22 contract suite.
 
-No Node version setting was changed because the Vercel project setting affects future deployments beyond the current Preview audit.
+Quality Gate #217 proved both jobs GREEN on the same head:
+
+- **Full contract · Node 22** — full `npm run check` contract suite;
+- **Vercel runtime parity · Node 24** — TypeScript, optimized Next build, build-clean, hermetic Auth lifecycle/failure modes and anonymous/runtime security smoke.
+
+This establishes compatibility with both the canonical CI major and the major currently configured in Vercel without changing Vercel project settings.
+
+The project may later choose to standardize on one major, but a Node 22/24 mismatch is no longer an untested production-readiness uncertainty.
 
 ## Custom environments
 No Vercel custom environments are currently configured. The synthetic staging workflow therefore uses the standard `preview` environment rather than a separately named Vercel Staging environment.
 
 This is acceptable for the current synthetic phase because target selection, environment variables and the QA workflow all explicitly prevent Production use. A dedicated custom environment can be evaluated later if plan/capability and operational needs justify it.
 
+## Runtime observation
+The exact P1AA Preview deployment `dpl_BRWjuBKso9qAN4W515yZDXfRm5M1` was queried for warning/error runtime logs within the 30-minute retention window supported by the Hobby plan. No matching warning/error logs were found.
+
+This is observational evidence only; it does not replace authenticated E2E or monitoring strategy approval.
+
 ## Decision
 Verified:
 
-**STAGING VARIABLES PREVIEW-ONLY · NO CURRENT STAGING ENV IN PRODUCTION SCOPE · GIT LINK CORRECT · PRODUCTION STILL BLOCKED**
+**STAGING VARIABLES PREVIEW-ONLY · NO CURRENT STAGING ENV IN PRODUCTION SCOPE · GIT LINK CORRECT · NODE 22/24 CI PARITY GREEN · PRODUCTION STILL BLOCKED**
 
 Still open:
 
 - production Supabase project/plan approval;
 - independent production secrets;
-- Node runtime parity decision;
 - production region/data-residency decision;
 - monitoring/error handling;
 - application/database rollback procedure;
