@@ -11,13 +11,14 @@
     "test:continuity": "node --experimental-strip-types scripts/test-continuity-model.mjs",
     "test:operations-domain": "node --experimental-strip-types scripts/test-operations-domain.mjs",
     "test:qa-runner-safety": "node scripts/test-qa-runner-safety.mjs",
+    "test:staging-e2e-workflow": "node scripts/test-staging-e2e-workflow.mjs",
     "test:build-clean": "git diff --exit-code -- tsconfig.json next-env.d.ts",
     "test:auth-hermetic": "node scripts/test-auth-lifecycle-hermetic.mjs",
     "test:operations-conflict-hermetic": "node scripts/test-operations-conflict-hermetic.mjs",
     "test:operations-role-http-hermetic": "node scripts/test-operations-role-http-hermetic.mjs",
     "test:dashboard-privacy-hermetic": "node scripts/test-dashboard-privacy-hermetic.mjs",
     "test:anonymous-security": "node scripts/test-anonymous-security-smoke.mjs",
-    "check": "npm run typecheck && npm run test:private-boundaries && npm run test:continuity && npm run test:operations-domain && npm run test:qa-runner-safety && npm run build && npm run test:build-clean && npm run test:auth-hermetic && npm run test:operations-conflict-hermetic && npm run test:operations-role-http-hermetic && npm run test:dashboard-privacy-hermetic && npm run test:anonymous-security",
+    "check": "npm run typecheck && npm run test:private-boundaries && npm run test:continuity && npm run test:operations-domain && npm run test:qa-runner-safety && npm run test:staging-e2e-workflow && npm run build && npm run test:build-clean && npm run test:auth-hermetic && npm run test:operations-conflict-hermetic && npm run test:operations-role-http-hermetic && npm run test:dashboard-privacy-hermetic && npm run test:anonymous-security",
     "qa:operations": "node scripts/qa-private-operations.mjs"
   },
   "dependencies": {
