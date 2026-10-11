@@ -14,6 +14,9 @@ export type OperationPermission =
   | "view_operational_round"
   | "write_operational_round"
   | "complete_operational_round"
+  | "view_operational_followup"
+  | "write_operational_followup"
+  | "manage_operational_followup"
   | "report_incident"
   | "manage_incident"
   | "manage_resident"
@@ -23,58 +26,14 @@ export type OperationPermission =
 
 const permissions: Record<OperationsRole, readonly OperationPermission[]> = {
   administrator: [
-    "lookup_emergency_contact",
-    "lookup_parking",
-    "view_shift_schedule",
-    "report_shift_gap",
-    "request_shift_replacement",
-    "manage_shift_schedule",
-    "confirm_shift_handoff",
-    "view_shift_log",
-    "write_shift_log",
-    "close_shift_log",
-    "view_operational_round",
-    "write_operational_round",
-    "complete_operational_round",
-    "report_incident",
-    "manage_incident",
-    "manage_resident",
-    "manage_parking",
-    "review_staff_functions",
-    "review_staff_contract",
+    "lookup_emergency_contact","lookup_parking","view_shift_schedule","report_shift_gap","request_shift_replacement","manage_shift_schedule","confirm_shift_handoff","view_shift_log","write_shift_log","close_shift_log","view_operational_round","write_operational_round","complete_operational_round","view_operational_followup","write_operational_followup","manage_operational_followup","report_incident","manage_incident","manage_resident","manage_parking","review_staff_functions","review_staff_contract",
   ],
   committee: ["view_shift_schedule", "review_staff_functions"],
   concierge: [
-    "lookup_emergency_contact",
-    "lookup_parking",
-    "view_shift_schedule",
-    "report_shift_gap",
-    "confirm_shift_handoff",
-    "view_shift_log",
-    "write_shift_log",
-    "close_shift_log",
-    "view_operational_round",
-    "write_operational_round",
-    "complete_operational_round",
-    "report_incident",
+    "lookup_emergency_contact","lookup_parking","view_shift_schedule","report_shift_gap","confirm_shift_handoff","view_shift_log","write_shift_log","close_shift_log","view_operational_round","write_operational_round","complete_operational_round","view_operational_followup","write_operational_followup","manage_operational_followup","report_incident",
   ],
   mayordomo: [
-    "lookup_emergency_contact",
-    "lookup_parking",
-    "view_shift_schedule",
-    "report_shift_gap",
-    "request_shift_replacement",
-    "manage_shift_schedule",
-    "confirm_shift_handoff",
-    "view_shift_log",
-    "write_shift_log",
-    "close_shift_log",
-    "view_operational_round",
-    "write_operational_round",
-    "complete_operational_round",
-    "report_incident",
-    "manage_incident",
-    "review_staff_functions",
+    "lookup_emergency_contact","lookup_parking","view_shift_schedule","report_shift_gap","request_shift_replacement","manage_shift_schedule","confirm_shift_handoff","view_shift_log","write_shift_log","close_shift_log","view_operational_round","write_operational_round","complete_operational_round","view_operational_followup","write_operational_followup","manage_operational_followup","report_incident","manage_incident","review_staff_functions",
   ],
   resident: [],
 };
