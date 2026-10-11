@@ -11,6 +11,9 @@ export type OperationPermission =
   | "view_shift_log"
   | "write_shift_log"
   | "close_shift_log"
+  | "view_operational_round"
+  | "write_operational_round"
+  | "complete_operational_round"
   | "report_incident"
   | "manage_incident"
   | "manage_resident"
@@ -30,6 +33,9 @@ const permissions: Record<OperationsRole, readonly OperationPermission[]> = {
     "view_shift_log",
     "write_shift_log",
     "close_shift_log",
+    "view_operational_round",
+    "write_operational_round",
+    "complete_operational_round",
     "report_incident",
     "manage_incident",
     "manage_resident",
@@ -47,6 +53,9 @@ const permissions: Record<OperationsRole, readonly OperationPermission[]> = {
     "view_shift_log",
     "write_shift_log",
     "close_shift_log",
+    "view_operational_round",
+    "write_operational_round",
+    "complete_operational_round",
     "report_incident",
   ],
   mayordomo: [
@@ -60,6 +69,9 @@ const permissions: Record<OperationsRole, readonly OperationPermission[]> = {
     "view_shift_log",
     "write_shift_log",
     "close_shift_log",
+    "view_operational_round",
+    "write_operational_round",
+    "complete_operational_round",
     "report_incident",
     "manage_incident",
     "review_staff_functions",

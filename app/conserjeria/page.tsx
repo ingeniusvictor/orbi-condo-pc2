@@ -3,6 +3,7 @@
 import Link from "next/link";
 import {FormEvent,useCallback,useEffect,useMemo,useState} from "react";
 import ConciergeShiftLog from "../../components/ConciergeShiftLog";
+import ConciergeOperationalRounds from "../../components/ConciergeOperationalRounds";
 
 type OperationsRole="administrator"|"committee"|"concierge"|"mayordomo"|"resident";
 type ShiftStatus="planned"|"vacant"|"requested"|"confirmed"|"received";
@@ -215,6 +216,7 @@ export default function ConciergeDailyPage(){
    </section>
 
    <ConciergeShiftLog date={date} today={today} shifts={dashboard.shifts} incidents={dashboard.incidents} permissions={permissions}/>
+   <ConciergeOperationalRounds date={date} today={today} incidents={dashboard.incidents} permissions={permissions}/>
   </>:<section className="concierge-access-card"><h2>Sin datos operativos disponibles</h2><p>La sesión está activa, pero no fue posible cargar la jornada.</p></section>}
 
   <footer className="concierge-footer"><span>ORBI LIVING · SYNTHETIC STAGING ONLY</span><span>Sin PII · RLS activo · comandos server-side</span></footer>

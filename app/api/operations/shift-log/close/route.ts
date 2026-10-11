@@ -33,6 +33,10 @@ export async function POST(req:Request){
  if(current.revision!==body.expectedRevision)return NextResponse.json({error:"La bitácora cambió; recarga antes de cerrar",currentRevision:current.revision},{status:409});
  if(current.state!=="open")return NextResponse.json({error:"La bitácora ya está cerrada"},{status:409});
 
+ const roundResponse=await operationsDbFetch(`operational_rounds?select=id&community_id=eq.${community}&shift_log_id=eq.${logId}&state=eq.open&limit=1`,identity);
+ if(!roundResponse.ok)return NextResponse.json({error:"No se pudo validar el estado de las rondas"},{status:502});
+ if((await roundResponse.json() as {id:string}[]).length)return NextResponse.json({error:"Completa la ronda operativa abierta antes de cerrar y entregar el turno"},{status:409});
+
  const update={state:"closed",closed_by:identity.id,closed_at:new Date().toISOString(),closure_code:closure.closureCode,access_control_status:closure.accessControlStatus,equipment_status:closure.equipmentStatus,open_incidents_reviewed:closure.openIncidentsReviewed,pending_items_count:closure.pendingItemsCount,updated_by:identity.id};
  const updateResponse=await operationsDbFetch(`shift_logs?id=eq.${logId}&community_id=eq.${community}&state=eq.open&revision=eq.${body.expectedRevision}&select=id,state,closed_at,closure_code,access_control_status,equipment_status,open_incidents_reviewed,pending_items_count,revision,updated_at`,identity,{method:"PATCH",headers:{"Content-Type":"application/json","Prefer":"return=representation"},body:JSON.stringify(update)});
  if(!updateResponse.ok)return NextResponse.json({error:"No se pudo cerrar la bitácora"},{status:updateResponse.status===409?409:400});
