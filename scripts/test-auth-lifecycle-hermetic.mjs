@@ -13,7 +13,15 @@ const syntheticEmail="concierge.synthetic@example.invalid";
 const syntheticPassword="synthetic-password";
 const syntheticUserId="11111111-1111-4111-8111-111111111111";
 
-const state={passwordGrants:0,refreshGrants:0,userLookups:0,membershipLookups:0,logoutCalls:0,revoked:new Set()};
+const state={
+ passwordGrants:0,
+ refreshGrants:0,
+ userLookups:0,
+ membershipLookups:0,
+ logoutCalls:0,
+ membershipMode:"active",
+ revoked:new Set(),
+};
 
 function sendJson(res,status,payload){
  res.writeHead(status,{"Content-Type":"application/json","Cache-Control":"no-store"});
@@ -27,6 +35,13 @@ async function readJson(req){
 function bearer(req){
  const value=req.headers.authorization||"";
  return value.startsWith("Bearer ")?value.slice(7):"";
+}
+function membershipFixture(){
+ if(state.membershipMode==="disabled")return {operations_role:"concierge",active_from:null,active_until:null,disabled_at:"2026-10-10T00:00:00Z"};
+ if(state.membershipMode==="future")return {operations_role:"concierge",active_from:"2999-01-01T00:00:00Z",active_until:null,disabled_at:null};
+ if(state.membershipMode==="expired")return {operations_role:"concierge",active_from:null,active_until:"2000-01-01T00:00:00Z",disabled_at:null};
+ if(state.membershipMode==="unknown_role")return {operations_role:"intruder",active_from:null,active_until:null,disabled_at:null};
+ return {operations_role:"concierge",active_from:null,active_until:null,disabled_at:null};
 }
 
 const upstream=http.createServer(async(req,res)=>{
@@ -53,7 +68,7 @@ const upstream=http.createServer(async(req,res)=>{
   state.membershipLookups++;
   const token=bearer(req);
   if(!["qa-access-1","qa-access-2"].includes(token)||state.revoked.has(token))return sendJson(res,401,{error:"invalid_token"});
-  return sendJson(res,200,[{operations_role:"concierge",active_from:null,active_until:null,disabled_at:null}]);
+  return sendJson(res,200,[membershipFixture()]);
  }
  if(req.method==="POST"&&url.pathname==="/auth/v1/logout"){
   state.logoutCalls++;
@@ -102,6 +117,24 @@ function assertIssuedCookie(raw,name,{maxAge}={}){
  assert.equal(lower.includes("domain="),false,`${name} host-only`);
  if(maxAge!==undefined)assert.equal(lower.includes(`max-age=${maxAge}`),true,`${name} Max-Age=${maxAge}`);
 }
+function assertClearedCookie(raw,name){
+ assert.ok(raw,`${name} should be cleared`);
+ const lower=raw.toLowerCase();
+ assert.match(raw,new RegExp(`^${name}=;`,"i"));
+ assert.equal(lower.includes("max-age=0"),true,`${name} Max-Age=0`);
+ assert.equal(lower.includes("httponly"),true,`${name} HttpOnly while clearing`);
+ assert.equal(lower.includes("secure"),true,`${name} Secure while clearing`);
+ assert.equal(lower.includes("samesite=strict"),true,`${name} SameSite=Strict while clearing`);
+ assert.equal(lower.includes("path=/"),true,`${name} Path=/ while clearing`);
+ assert.equal(lower.includes("domain="),false,`${name} remains host-only while clearing`);
+}
+function assertAnonymousSession(result,label){
+ assert.equal(result.response.status,200,label);
+ assert.equal(result.payload?.authenticated,false,label);
+ assert.equal(result.payload?.communityId,null,label);
+ assert.equal(result.payload?.role,null,label);
+ assert.deepEqual(result.payload?.permissions,[],label);
+}
 
 async function main(){
  await listen(upstream,upstreamPort,upstreamHost);
@@ -120,6 +153,12 @@ async function main(){
  assert.equal(state.passwordGrants,0,"missing Origin must not reach upstream auth");
  console.log("PASS login rejects missing Origin before upstream auth");
 
+ const grantsBeforeOversize=state.passwordGrants;
+ const oversized=await json("/api/auth/login",{method:"POST",headers:{"Content-Type":"application/json","Origin":appBase},body:JSON.stringify({email:syntheticEmail,password:"x".repeat(5000)})});
+ assert.equal(oversized.response.status,413);
+ assert.equal(state.passwordGrants,grantsBeforeOversize,"oversized login must not reach upstream auth");
+ console.log("PASS oversized login is rejected before upstream auth");
+
  const invalid=await json("/api/auth/login",{method:"POST",headers:{"Content-Type":"application/json","Origin":appBase},body:JSON.stringify({email:syntheticEmail,password:"wrong-synthetic-password"})});
  assert.equal(invalid.response.status,401);
  assert.equal(setCookies(invalid.response).length,0,"invalid login must not issue cookies");
@@ -137,6 +176,18 @@ async function main(){
  const loginCookie=`${cookiePair(loginSession)}; ${cookiePair(loginRefresh)}`;
  console.log("PASS login issues hardened session + browser-session refresh cookies");
 
+ const invalidAccess=await json("/api/auth/session",{headers:{Cookie:"orbi_session=not-a-valid-token"}});
+ assertAnonymousSession(invalidAccess,"invalid access token must fail closed");
+ console.log("PASS invalid access token fails closed to anonymous session");
+
+ for(const mode of ["disabled","future","expired","unknown_role"]){
+  state.membershipMode=mode;
+  const restricted=await json("/api/auth/session",{headers:{Cookie:loginCookie}});
+  assertAnonymousSession(restricted,`${mode} membership must fail closed`);
+ }
+ state.membershipMode="active";
+ console.log("PASS disabled, future, expired and unknown-role memberships all fail closed");
+
  const authenticated=await json("/api/auth/session",{headers:{Cookie:loginCookie}});
  assert.equal(authenticated.response.status,200);
  assert.equal(authenticated.payload?.authenticated,true);
@@ -148,6 +199,20 @@ async function main(){
  assert.equal(authenticated.payload?.permissions.includes("manage_shift_schedule"),false);
  assert.equal(authenticated.payload?.permissions.includes("manage_incident"),false);
  console.log("PASS session resolves synthetic pc2/concierge identity and least privilege");
+
+ const refreshWithoutToken=await json("/api/auth/refresh",{method:"POST",headers:{"Origin":appBase,"Cookie":"orbi_session=qa-access-1"}});
+ assert.equal(refreshWithoutToken.response.status,401);
+ assert.equal(refreshWithoutToken.payload?.error,"Sesión no renovable");
+ assertClearedCookie(findCookie(refreshWithoutToken.response,"orbi_session"),"orbi_session");
+ assert.equal(Boolean(findCookie(refreshWithoutToken.response,"orbi_refresh")),false,"missing refresh path should not invent a refresh cookie");
+ console.log("PASS missing refresh token clears stale access session and stays unauthorized");
+
+ const invalidRefresh=await json("/api/auth/refresh",{method:"POST",headers:{"Origin":appBase,"Cookie":"orbi_session=qa-access-1; orbi_refresh=invalid-refresh"}});
+ assert.equal(invalidRefresh.response.status,401);
+ assert.equal(invalidRefresh.payload?.error,"La sesión ya no es válida");
+ assertClearedCookie(findCookie(invalidRefresh.response,"orbi_session"),"orbi_session");
+ assertClearedCookie(findCookie(invalidRefresh.response,"orbi_refresh"),"orbi_refresh");
+ console.log("PASS invalid refresh token clears both local credentials");
 
  const refresh=await json("/api/auth/refresh",{method:"POST",headers:{"Origin":appBase,Cookie:loginCookie}});
  assert.equal(refresh.response.status,200);
@@ -170,24 +235,25 @@ async function main(){
  assert.equal(logout.response.status,200);
  assert.equal(logout.payload?.ok,true);
  assert.equal(logout.payload?.serverSessionRevoked,true);
- const clearedSession=findCookie(logout.response,"orbi_session");
- const clearedRefresh=findCookie(logout.response,"orbi_refresh");
- assert.ok(clearedSession?.toLowerCase().includes("max-age=0"));
- assert.ok(clearedRefresh?.toLowerCase().includes("max-age=0"));
+ assertClearedCookie(findCookie(logout.response,"orbi_session"),"orbi_session");
+ assertClearedCookie(findCookie(logout.response,"orbi_refresh"),"orbi_refresh");
  assert.equal(state.logoutCalls,1);
  console.log("PASS logout revokes synthetic upstream session and clears both cookies");
 
+ const revokedAccess=await json("/api/auth/session",{headers:{Cookie:"orbi_session=qa-access-2"}});
+ assertAnonymousSession(revokedAccess,"revoked access token must fail closed");
+ console.log("PASS revoked access token cannot recreate a session");
+
  const final=await json("/api/auth/session");
- assert.equal(final.payload?.authenticated,false);
- assert.equal(final.payload?.role,null);
- assert.deepEqual(final.payload?.permissions,[]);
+ assertAnonymousSession(final,"final session should be anonymous");
  console.log("PASS lifecycle returns to anonymous after logout");
 
  assert.equal(state.passwordGrants,2);
- assert.equal(state.refreshGrants,1);
- assert.equal(state.userLookups>=2,true);
- assert.equal(state.membershipLookups>=2,true);
+ assert.equal(state.refreshGrants,2,"one invalid and one valid refresh grant should reach the synthetic upstream");
+ assert.equal(state.userLookups>=8,true);
+ assert.equal(state.membershipLookups>=6,true);
  console.log("HERMETIC AUTH LIFECYCLE GREEN");
+ console.log("HERMETIC AUTH FAILURE MODES GREEN");
 }
 
 try{
