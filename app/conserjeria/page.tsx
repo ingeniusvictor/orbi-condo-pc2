@@ -4,6 +4,7 @@ import Link from "next/link";
 import {FormEvent,useCallback,useEffect,useMemo,useState} from "react";
 import ConciergeShiftLog from "../../components/ConciergeShiftLog";
 import ConciergeOperationalRounds from "../../components/ConciergeOperationalRounds";
+import ConciergeFollowups from "../../components/ConciergeFollowups";
 
 type OperationsRole="administrator"|"committee"|"concierge"|"mayordomo"|"resident";
 type ShiftStatus="planned"|"vacant"|"requested"|"confirmed"|"received";
@@ -67,7 +68,7 @@ export default function ConciergeDailyPage(){
  };
 
  const runShiftAction=async(path:string,shift:Shift,success:string)=>{if(busy)return;setBusy(true);setNotice(null);try{await post(path,{assignmentId:shift.id,expectedRevision:shift.revision});setNotice(success);await loadDashboard(date)}catch(error){setNotice(error instanceof Error?error.message:"No se pudo completar la acción.");await loadDashboard(date)}finally{setBusy(false)}};
- const submitIncident=async(event:FormEvent)=>{event.preventDefault();if(busy||!canReportIncident)return;setBusy(true);setNotice(null);try{await post("/api/operations/incidents/report",{serviceDate:date,area,priority,caseReference:reference.trim()||undefined});setReference("");setNotice("Novedad registrada en la bitácora operativa.");await loadDashboard(date)}catch(error){setNotice(error instanceof Error?error.message:"No se pudo registrar la novadad.")}finally{setBusy(false)}};
+ const submitIncident=async(event:FormEvent)=>{event.preventDefault();if(busy||!canReportIncident)return;setBusy(true);setNotice(null);try{await post("/api/operations/incidents/report",{serviceDate:date,area,priority,caseReference:reference.trim()||undefined});setReference("");setNotice("Novedad registrada en la bitácora operativa.");await loadDashboard(date)}catch(error){setNotice(error instanceof Error?error.message:"No se pudo registrar la novedad.")}finally{setBusy(false)}};
 
  if(loading)return <main className="concierge-shell concierge-center"><div className="concierge-loader"><span/>Validando turno y sesión privada…</div></main>;
  if(!session?.configured)return <main className="concierge-shell concierge-center"><section className="concierge-access-card"><p className="eyebrow">ORBI LIVING · CONSERJERÍA</p><h1>Operación privada no configurada</h1><p>Este corte continúa limitado a staging sintético.</p><Link href="/">Volver al sitio</Link></section></main>;
@@ -91,6 +92,7 @@ export default function ConciergeDailyPage(){
    </section>
    <ConciergeShiftLog date={date} today={today} shifts={dashboard.shifts} incidents={dashboard.incidents} permissions={permissions}/>
    <ConciergeOperationalRounds date={date} today={today} incidents={dashboard.incidents} permissions={permissions}/>
+   <ConciergeFollowups date={date} today={today} incidents={dashboard.incidents} permissions={permissions}/>
   </>:<section className="concierge-access-card"><h2>Sin datos operativos disponibles</h2><p>La sesión está activa, pero no fue posible cargar la jornada.</p></section>}
   <footer className="concierge-footer"><span>ORBI LIVING · SYNTHETIC STAGING ONLY</span><span>Sin PII · RLS activo · comandos server-side</span></footer>
  </main>;
