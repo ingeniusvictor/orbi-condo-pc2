@@ -1,0 +1,110 @@
+name: Synthetic Staging E2E
+
+on:
+  workflow_dispatch:
+    inputs:
+      target_url:
+        description: Exact ORBI LIVING Vercel Preview origin to test
+        required: true
+        type: string
+      role:
+        description: Synthetic Auth role
+        required: true
+        default: administrator
+        type: choice
+        options:
+          - administrator
+          - mayordomo
+          - concierge
+      service_date:
+        description: Optional YYYY-MM-DD Santiago operational date
+        required: false
+        type: string
+      run_conflict:
+        description: Run reversible HTTP 409 concurrency check
+        required: true
+        default: false
+        type: boolean
+
+permissions:
+  contents: read
+
+concurrency:
+  group: orbi-pc2-synthetic-staging-e2e
+  cancel-in-progress: false
+
+jobs:
+  e2e:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout reviewed default branch
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Setup Node
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22
+
+      - name: Validate requested target before secrets
+        id: target
+        env:
+          TARGET_URL: ${{ inputs.target_url }}
+          TARGET_ROLE: ${{ inputs.role }}
+          RUN_CONFLICT: ${{ inputs.run_conflict }}
+        run: |
+          set -euo pipefail
+          node --input-type=module <<'NODE' > "$RUNNER_TEMP/orbi-target.txt"
+          const raw=(process.env.TARGET_URL||"").trim();
+          let url;
+          try{url=new URL(raw)}catch{throw new Error("target_url must be an absolute URL")}
+          if(url.protocol!=="https:"||url.username||url.password||url.hash)throw new Error("target_url must be a credential-free HTTPS origin");
+          if(url.pathname!=="/"||url.search)throw new Error("target_url must contain only the deployment origin");
+          if(url.hostname==="orbi-condo-pc2.vercel.app")throw new Error("production hostname is forbidden for synthetic staging E2E");
+          if(!/^orbi-condo-pc2-[a-z0-9-]+-orbi4\.vercel\.app$/.test(url.hostname))throw new Error("target_url is not an ORBI LIVING orbi4 Preview hostname");
+          if(process.env.TARGET_ROLE==="concierge"&&process.env.RUN_CONFLICT==="true")throw new Error("run_conflict requires administrator or mayordomo");
+          process.stdout.write(url.origin);
+          NODE
+          printf 'url=%s\n' "$(cat "$RUNNER_TEMP/orbi-target.txt")" >> "$GITHUB_OUTPUT"
+
+      - name: Run Administrator E2E
+        if: inputs.role == 'administrator'
+        env:
+          ORBI_QA_BASE_URL: ${{ steps.target.outputs.url }}
+          ORBI_QA_EMAIL: ${{ secrets.ORBI_QA_ADMIN_EMAIL }}
+          ORBI_QA_PASSWORD: ${{ secrets.ORBI_QA_ADMIN_PASSWORD }}
+          ORBI_QA_ROLE: administrator
+          ORBI_QA_COMMUNITY_ID: pc2
+          ORBI_QA_DATE: ${{ inputs.service_date }}
+          ORBI_QA_409: ${{ inputs.run_conflict && '1' || '0' }}
+          ORBI_QA_VERCEL_BYPASS: ${{ secrets.ORBI_QA_VERCEL_BYPASS }}
+        run: node scripts/qa-private-operations.mjs
+
+      - name: Run Mayordomia E2E
+        if: inputs.role == 'mayordomo'
+        env:
+          ORBI_QA_BASE_URL: ${{ steps.target.outputs.url }}
+          ORBI_QA_EMAIL: ${{ secrets.ORBI_QA_MAYORDOMO_EMAIL }}
+          ORBI_QA_PASSWORD: ${{ secrets.ORBI_QA_MAYORDOMO_PASSWORD }}
+          ORBI_QA_ROLE: mayordomo
+          ORBI_QA_COMMUNITY_ID: pc2
+          ORBI_QA_DATE: ${{ inputs.service_date }}
+          ORBI_QA_409: ${{ inputs.run_conflict && '1' || '0' }}
+          ORBI_QA_VERCEL_BYPASS: ${{ secrets.ORBI_QA_VERCEL_BYPASS }}
+        run: node scripts/qa-private-operations.mjs
+
+      - name: Run Conserjeria E2E
+        if: inputs.role == 'concierge'
+        env:
+          ORBI_QA_BASE_URL: ${{ steps.target.outputs.url }}
+          ORBI_QA_EMAIL: ${{ secrets.ORBI_QA_CONCIERGE_EMAIL }}
+          ORBI_QA_PASSWORD: ${{ secrets.ORBI_QA_CONCIERGE_PASSWORD }}
+          ORBI_QA_ROLE: concierge
+          ORBI_QA_COMMUNITY_ID: pc2
+          ORBI_QA_DATE: ${{ inputs.service_date }}
+          ORBI_QA_409: '0'
+          ORBI_QA_VERCEL_BYPASS: ${{ secrets.ORBI_QA_VERCEL_BYPASS }}
+        run: node scripts/qa-private-operations.mjs
