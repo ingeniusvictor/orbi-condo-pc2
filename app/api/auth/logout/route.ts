@@ -1,9 +1,9 @@
 import {cookies} from "next/headers";
 import {NextResponse} from "next/server";
 import {OPERATIONS_REFRESH_COOKIE,OPERATIONS_SESSION_COOKIE,operationsAuthFetch,operationsBackendConfigured,trustedOrigin} from "../../../../lib/server/operations-auth";
+import {clearOperationsCookies} from "../../../../lib/server/operations-cookies";
 
 const noStore={"Cache-Control":"private, no-store"};
-const cookieBase={httpOnly:true,secure:process.env.NODE_ENV==="production",sameSite:"strict" as const,path:"/"};
 
 async function revokeLocal(accessToken:string):Promise<boolean>{
  try{
@@ -35,7 +35,6 @@ export async function POST(req:Request){
   if(refreshedAccess)revoked=await revokeLocal(refreshedAccess);
  }
  const response=NextResponse.json({ok:true,serverSessionRevoked:revoked},{headers:noStore});
- response.cookies.set(OPERATIONS_SESSION_COOKIE,"",{...cookieBase,maxAge:0});
- response.cookies.set(OPERATIONS_REFRESH_COOKIE,"",{...cookieBase,maxAge:0});
+ clearOperationsCookies(response);
  return response;
 }
