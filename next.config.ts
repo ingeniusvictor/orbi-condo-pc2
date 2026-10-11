@@ -7,11 +7,19 @@ const securityHeaders=[
  {key:"Permissions-Policy",value:"camera=(), microphone=(), geolocation=()"}
 ];
 
+const privateApiHeaders=[
+ {key:"Cache-Control",value:"private, no-store"},
+];
+
 const nextConfig:NextConfig={
  reactStrictMode:true,
  poweredByHeader:false,
  async headers(){
-  return [{source:"/(.*)",headers:securityHeaders}];
+  return [
+   {source:"/(.*)",headers:securityHeaders},
+   {source:"/api/auth/:path*",headers:privateApiHeaders},
+   {source:"/api/operations/:path*",headers:privateApiHeaders},
+  ];
  }
 };
 
