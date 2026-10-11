@@ -48,28 +48,47 @@ El alta mantiene el corte sin narrativa libre: área, prioridad y una referencia
 ## Frontera de privacidad
 P1F puede mostrar `display_name` de `staff_private` únicamente dentro de la consola autenticada y solo a roles que administran cobertura. En staging esos registros deben seguir siendo sintéticos.
 
+La política RLS `staff_private_operational_select` quedó endurecida para permitir SELECT únicamente a `administrator` y `mayordomo`. Conserjería conserva las acciones operativas que necesita sobre turnos, pero ya no puede leer directamente el catálogo privado de personal de cobertura.
+
 No agregar datos reales mientras el `PRODUCTION-READINESS-GATE` siga abierto.
 
 ## Evidencia obtenida en staging
 - login Auth sintético de Administración confirmado desde la UI;
 - `/api/auth/session` resuelve `pc2` y rol `administrator` después del login;
 - dashboard privado carga bajo RLS y muestra incidencias visibles;
-- se cargó una jornada sintética de prueba para `2026-10-10` con estados `planned`, `vacant`, `requested` y `confirmed`;
-- el catálogo de cobertura mantiene únicamente personal sintético;
-- la navegación flotante pública se excluye de `/operaciones` para no tapar controles de la consola privada.
+- existe una jornada sintética de prueba para `2026-10-10` con turno AM `planned`, turno PM `vacant`, turno Noche `requested` y una cobertura especial `confirmed`;
+- el catálogo de cobertura contiene únicamente los dos suplentes sintéticos habilitados;
+- existe evidencia persistida en `shift_events` de un fixture sintético que recorrió `planned → vacant → requested → confirmed → received`, terminando en revisión 5. Esto demuestra la cadena de dominio/persistencia P1C, pero no sustituye el gate HTTP/UI P1F;
+- existen membresías sintéticas de Mayordomía y Conserjería. Sus cuentas Auth todavía no están confirmadas, por lo que el E2E por rol permanece pendiente sin modificar manualmente `auth.users`;
+- la navegación flotante pública se excluye de `/operaciones` para no tapar controles de la consola privada;
+- `/operaciones` incorpora hardening responsive específico de ruta: safe-area inferior, prevención de overflow horizontal y apilado de controles estrechos en móvil;
+- RLS de `staff_private` fue alineado con la frontera de privacidad P1F: solo Administración/Mayordomía pueden leer el catálogo privado.
+
+## Harness E2E repetible
+`scripts/qa-private-operations.mjs` y `npm run qa:operations` permiten ejecutar, sin guardar secretos en Git:
+1. login;
+2. session autenticada y rol esperado;
+3. lectura de dashboard bajo RLS;
+4. refresh y continuidad de sesión;
+5. logout y verificación de sesión cerrada.
+
+Con `ORBI_QA_409=1`, el mismo harness toma un turno sintético `planned`, lanza dos `report-gap` concurrentes con el mismo `expectedRevision`, exige exactamente un HTTP 200 y un HTTP 409, vuelve a leer la revisión vigente y restaura el fixture a `planned` mediante el endpoint controlado.
+
+Credenciales de QA deben existir únicamente como variables de entorno locales (`ORBI_QA_EMAIL`, `ORBI_QA_PASSWORD`). Nunca deben incorporarse al repositorio, logs o documentación.
 
 ## Qué NO se cierra con P1F
 Aunque el cableado de UI exista, los siguientes gates permanecen pendientes hasta tener evidencia real:
-- refresh → continuidad de sesión → logout probado end-to-end;
-- `409` HTTP probado end-to-end con dos operaciones concurrentes autenticadas;
+- refresh → continuidad de sesión → logout ejecutado end-to-end mediante el harness o navegador autenticado;
+- `409` HTTP ejecutado end-to-end con dos operaciones concurrentes autenticadas;
+- login/UI/RLS probado con cuentas Auth confirmadas de Mayordomía y Conserjería;
 - rate limiting / abuso de login;
 - MFA y política de contraseña de producción;
 - backup lógico exitoso + restore independiente + smoke RLS;
-- QA visual responsive manual completo;
+- QA visual responsive manual completo en 390×844, 430×932, 1440×900 y 1920×1080;
 - procedimiento operativo PC2 validado;
 - infraestructura Supabase de producción.
 
-Por eso **no marcar automáticamente G4 ni P1 como completos solo por este commit**.
+Por eso **no marcar automáticamente G4 ni P1 como completos solo por este corte**.
 
 ## Validación esperada del corte
 - `npm run check` GREEN;
@@ -78,7 +97,8 @@ Por eso **no marcar automáticamente G4 ni P1 como completos solo por este commi
 - una sesión con `view_shift_schedule` puede leer el dashboard;
 - roles sin permiso no reciben la consola operativa;
 - no existen fetches del cliente a `*.supabase.co` ni escrituras directas a PostgREST;
-- los comandos continúan sujetos a permisos server-side, RLS, transición de dominio y revisión optimista.
+- los comandos continúan sujetos a permisos server-side, RLS, transición de dominio y revisión optimista;
+- P1E Recovery sigue pendiente y no bloquea el trabajo sintético de staging.
 
 ## Dependencia
 PR apilado sobre P1E (#32) → P1D (#31) → P1C (#30) → P1B (#29) → P1A (#28) → P0/operaciones (#27).
