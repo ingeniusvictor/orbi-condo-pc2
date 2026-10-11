@@ -1,0 +1,79 @@
+.orbi-private-route {
+  overflow-x: clip;
+  background: #06131f;
+}
+
+.orbi-private-route main {
+  box-sizing: border-box;
+  max-width: 100%;
+  padding-bottom: max(112px, calc(88px + env(safe-area-inset-bottom))) !important;
+}
+
+.orbi-private-route .orbi-private-grid,
+.orbi-private-route .orbi-private-grid > *,
+.orbi-private-route .orbi-private-grid article {
+  min-width: 0;
+}
+
+.orbi-private-route section[aria-label="Bitácora operativa reciente"] {
+  box-sizing: border-box;
+  padding-bottom: max(124px, calc(92px + env(safe-area-inset-bottom))) !important;
+}
+
+@media (max-width: 860px) {
+  .orbi-private-route .orbi-private-grid {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+}
+
+@media (max-width: 620px) {
+  .orbi-private-route main {
+    padding-left: 12px !important;
+    padding-right: 12px !important;
+    padding-bottom: max(128px, calc(96px + env(safe-area-inset-bottom))) !important;
+  }
+
+  .orbi-private-route main nav {
+    align-items: flex-start !important;
+  }
+
+  .orbi-private-route main nav > div {
+    min-width: 0;
+  }
+
+  .orbi-private-route .orbi-private-grid [style*="minmax(180px"],
+  .orbi-private-route .orbi-private-grid [style*="1fr auto"] {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  .orbi-private-route .orbi-private-grid input,
+  .orbi-private-route .orbi-private-grid select,
+  .orbi-private-route .orbi-private-grid button {
+    max-width: 100%;
+  }
+
+  .orbi-private-route .orbi-private-grid button,
+  .orbi-private-route main nav button {
+    min-height: 44px;
+  }
+
+  .orbi-private-route section[aria-label="Bitácora operativa reciente"] {
+    padding-left: 12px !important;
+    padding-right: 12px !important;
+    padding-bottom: max(132px, calc(100px + env(safe-area-inset-bottom))) !important;
+  }
+}
+
+@media (max-width: 430px) {
+  .orbi-private-route main,
+  .orbi-private-route section[aria-label="Bitácora operativa reciente"] {
+    padding-left: 10px !important;
+    padding-right: 10px !important;
+  }
+
+  .orbi-private-route .orbi-private-grid button,
+  .orbi-private-route .orbi-private-grid select,
+  .orbi-private-route .orbi-private-grid input {
+    width: 100%;
+  }
+}
