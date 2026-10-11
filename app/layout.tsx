@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import FloatingNav from "../components/FloatingNav";
 import PrivateOperationsActivity from "../components/PrivateOperationsActivity";
+import PrivateOperationsViewport from "../components/PrivateOperationsViewport";
 import "./globals.css";
 import "./oc-pc2.css";
 import "./navigation.css";
@@ -10,6 +11,7 @@ import "./community-map.css";
 import "./pocket.css";
 import "./maintenance-alerts.css";
 import "./governance-voice.css";
+import "./private-operations.css";
 
 export const metadata:Metadata={
  title:"Parque Ciudadano II · ORBI LIVING",
@@ -20,5 +22,5 @@ export const metadata:Metadata={
 };
 
 export default function RootLayout({children}:{children:React.ReactNode}){
- return <html lang="es"><body>{children}<PrivateOperationsActivity/><FloatingNav/></body></html>
+ return <html lang="es"><body><PrivateOperationsViewport/>{children}<PrivateOperationsActivity/><FloatingNav/></body></html>
 }
