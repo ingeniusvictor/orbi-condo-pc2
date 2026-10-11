@@ -10,7 +10,7 @@ permissions:
 
 jobs:
   check:
-    name: Full contract · Node 22
+    name: Full contract - Node 22
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -29,7 +29,7 @@ jobs:
         run: npm run check
 
   runtime-parity-node24:
-    name: Vercel runtime parity · Node 24
+    name: Vercel runtime parity - Node 24
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
