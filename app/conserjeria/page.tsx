@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import {FormEvent,useCallback,useEffect,useMemo,useState} from "react";
+import ConciergeShiftLog from "../../components/ConciergeShiftLog";
 
 type OperationsRole="administrator"|"committee"|"concierge"|"mayordomo"|"resident";
 type ShiftStatus="planned"|"vacant"|"requested"|"confirmed"|"received";
@@ -206,12 +207,14 @@ export default function ConciergeDailyPage(){
     </div>
 
     <div className="concierge-panel">
-     <div className="concierge-section-heading"><div><span className="eyebrow">BITÁCORA</span><h2>Novedades abiertas</h2></div><span>{dashboard.incidents.length}</span></div>
+     <div className="concierge-section-heading"><div><span className="eyebrow">INCIDENCIAS</span><h2>Novedades abiertas</h2></div><span>{dashboard.incidents.length}</span></div>
      <div className="concierge-incident-list">{dashboard.incidents.length?dashboard.incidents.slice(0,8).map(incident=><article key={incident.id}><div><b>{areaLabel[incident.area]||incident.area}</b><span>{incident.state.replaceAll("_"," ")}</span></div><strong className={`priority ${incident.priority}`}>{priorityLabel[incident.priority]}</strong></article>):<p className="concierge-empty">No hay novedades abiertas.</p>}</div>
 
      {canReportIncident&&<form className="concierge-report" onSubmit={submitIncident}><div><span className="eyebrow">NUEVA NOVEDAD</span><h3>Registrar incidencia</h3></div><label>Área<select value={area} onChange={event=>setArea(event.target.value)}><option value="access">Acceso</option><option value="common_area">Área común</option><option value="water">Agua</option><option value="electricity">Electricidad</option><option value="elevator">Ascensor</option><option value="security">Seguridad</option><option value="medical">Médica</option><option value="fire">Incendio</option><option value="other">Otra</option></select></label><label>Prioridad<select value={priority} onChange={event=>setPriority(event.target.value as IncidentPriority)}><option value="low">Baja</option><option value="medium">Media</option><option value="high">Alta</option><option value="critical">Crítica</option></select></label><label>Referencia sintética opcional<input value={reference} onChange={event=>setReference(event.target.value.replace(/[^A-Za-z0-9._-]/g,"").slice(0,80))} placeholder="EV-TEST-01" /></label><button className="primary" disabled={busy} type="submit">{busy?"Registrando…":"Registrar novedad"}</button></form>}
     </div>
    </section>
+
+   <ConciergeShiftLog date={date} today={today} shifts={dashboard.shifts} incidents={dashboard.incidents} permissions={permissions}/>
   </>:<section className="concierge-access-card"><h2>Sin datos operativos disponibles</h2><p>La sesión está activa, pero no fue posible cargar la jornada.</p></section>}
 
   <footer className="concierge-footer"><span>ORBI LIVING · SYNTHETIC STAGING ONLY</span><span>Sin PII · RLS activo · comandos server-side</span></footer>

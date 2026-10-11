@@ -8,6 +8,9 @@ export type OperationPermission =
   | "request_shift_replacement"
   | "manage_shift_schedule"
   | "confirm_shift_handoff"
+  | "view_shift_log"
+  | "write_shift_log"
+  | "close_shift_log"
   | "report_incident"
   | "manage_incident"
   | "manage_resident"
@@ -24,6 +27,9 @@ const permissions: Record<OperationsRole, readonly OperationPermission[]> = {
     "request_shift_replacement",
     "manage_shift_schedule",
     "confirm_shift_handoff",
+    "view_shift_log",
+    "write_shift_log",
+    "close_shift_log",
     "report_incident",
     "manage_incident",
     "manage_resident",
@@ -38,6 +44,9 @@ const permissions: Record<OperationsRole, readonly OperationPermission[]> = {
     "view_shift_schedule",
     "report_shift_gap",
     "confirm_shift_handoff",
+    "view_shift_log",
+    "write_shift_log",
+    "close_shift_log",
     "report_incident",
   ],
   mayordomo: [
@@ -48,6 +57,9 @@ const permissions: Record<OperationsRole, readonly OperationPermission[]> = {
     "request_shift_replacement",
     "manage_shift_schedule",
     "confirm_shift_handoff",
+    "view_shift_log",
+    "write_shift_log",
+    "close_shift_log",
     "report_incident",
     "manage_incident",
     "review_staff_functions",
