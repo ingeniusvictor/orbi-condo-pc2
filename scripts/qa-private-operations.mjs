@@ -5,6 +5,7 @@ const expectedRole=process.env.ORBI_QA_ROLE||"administrator";
 const expectedCommunityId=process.env.ORBI_QA_COMMUNITY_ID||"pc2";
 const runConflict=process.env.ORBI_QA_409==="1";
 const allowProduction=process.env.ORBI_QA_ALLOW_PRODUCTION==="1";
+const vercelBypass=(process.env.ORBI_QA_VERCEL_BYPASS||"").trim();
 const date=process.env.ORBI_QA_DATE||new Intl.DateTimeFormat("en-CA",{timeZone:"America/Santiago",year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date());
 const allowedRoles=new Set(["administrator","mayordomo","concierge","committee","resident"]);
 
@@ -33,6 +34,10 @@ if(baseUrl.hostname==="orbi-condo-pc2.vercel.app"&&!allowProduction){
  console.error("Refusing to run QA against the production hostname. Set ORBI_QA_ALLOW_PRODUCTION=1 only after explicit production approval.");
  process.exit(2);
 }
+if(vercelBypass&&!baseUrl.hostname.endsWith(".vercel.app")){
+ console.error("Refusing to send ORBI_QA_VERCEL_BYPASS to a non-Vercel hostname.");
+ process.exit(2);
+}
 if(!allowedRoles.has(expectedRole)){
  console.error(`Invalid ORBI_QA_ROLE: ${expectedRole}`);
  process.exit(2);
@@ -55,6 +60,26 @@ function absorbCookies(response){
  }
 }
 function cookieHeader(){return [...jar.entries()].map(([key,value])=>`${key}=${value}`).join("; ")}
+
+async function establishProtectedPreviewAccess(){
+ if(!vercelBypass)return;
+ const response=await fetch(baseUrl.origin,{
+  headers:{
+   Accept:"text/html",
+   "x-vercel-protection-bypass":vercelBypass,
+   "x-vercel-set-bypass-cookie":"true",
+  },
+  redirect:"manual",
+ });
+ absorbCookies(response);
+ const location=response.headers.get("location");
+ if(location&&new URL(location,baseUrl.origin).origin!==baseUrl.origin){
+  throw new Error("Vercel bypass redirected outside the verified deployment origin");
+ }
+ assert(response.status<400,`Vercel bypass bootstrap failed with HTTP ${response.status}`);
+ assert(jar.has("_vercel_jwt"),"Vercel bypass did not establish a scoped _vercel_jwt cookie");
+ console.log("PASS protected Preview access established with scoped Vercel bypass cookie");
+}
 
 async function request(path,{method="GET",body}={}){
  const url=new URL(path,baseUrl);
@@ -102,6 +127,8 @@ async function restoreConflictFixture(assignmentId){
 
 async function main(){
  console.log(`ORBI LIVING private operations QA · ${baseUrl.origin} · ${date}`);
+
+ await establishProtectedPreviewAccess();
 
  const preflight=await request("/api/auth/session");
  assert(preflight.response.status===200,`preflight session expected 200, received ${preflight.response.status}`);
@@ -204,8 +231,7 @@ async function main(){
  console.log("QA GREEN");
 }
 
-main().catch(async(error)=>{
- if(typeof conflictAssignmentId!=="undefined"&&conflictAssignmentId)await restoreConflictFixture(conflictAssignmentId);
+main().catch((error)=>{
  console.error(`QA RED: ${error instanceof Error?error.message:String(error)}`);
  process.exit(1);
 });
