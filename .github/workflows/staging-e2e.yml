@@ -17,7 +17,7 @@ on:
           - mayordomo
           - concierge
       service_date:
-        description: Optional YYYY-MM-DD Santiago operational date
+        description: Optional YYYY-MM-DD Santiago operational date; required/current for write lifecycle
         required: false
         type: string
       run_conflict:
@@ -25,6 +25,15 @@ on:
         required: true
         default: false
         type: boolean
+      run_write_lifecycle:
+        description: Run one-shot append-only Administrator shift-log/round certification
+        required: true
+        default: false
+        type: boolean
+      write_assignment_id:
+        description: Dedicated fresh synthetic shift UUID for Administrator write lifecycle
+        required: false
+        type: string
 
 permissions:
   contents: read
@@ -54,7 +63,10 @@ jobs:
         env:
           TARGET_URL: ${{ inputs.target_url }}
           TARGET_ROLE: ${{ inputs.role }}
+          TARGET_DATE: ${{ inputs.service_date }}
           RUN_CONFLICT: ${{ inputs.run_conflict }}
+          RUN_WRITE_LIFECYCLE: ${{ inputs.run_write_lifecycle }}
+          WRITE_ASSIGNMENT_ID: ${{ inputs.write_assignment_id }}
         run: |
           set -euo pipefail
           node --input-type=module <<'NODE' > "$RUNNER_TEMP/orbi-target.txt"
@@ -66,6 +78,19 @@ jobs:
           if(url.hostname==="orbi-condo-pc2.vercel.app")throw new Error("production hostname is forbidden for synthetic staging E2E");
           if(!/^orbi-condo-pc2-[a-z0-9-]+-orbi4\.vercel\.app$/.test(url.hostname))throw new Error("target_url is not an ORBI LIVING orbi4 Preview hostname");
           if(process.env.TARGET_ROLE==="concierge"&&process.env.RUN_CONFLICT==="true")throw new Error("run_conflict requires administrator or mayordomo");
+
+          const runWrite=process.env.RUN_WRITE_LIFECYCLE==="true";
+          const writeAssignment=(process.env.WRITE_ASSIGNMENT_ID||"").trim();
+          const targetDate=(process.env.TARGET_DATE||"").trim();
+          if(runWrite){
+            if(process.env.TARGET_ROLE!=="administrator")throw new Error("run_write_lifecycle requires administrator");
+            if(process.env.RUN_CONFLICT==="true")throw new Error("run_write_lifecycle cannot be combined with run_conflict");
+            if(!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(writeAssignment))throw new Error("run_write_lifecycle requires a dedicated synthetic write_assignment_id UUID");
+            const today=new Intl.DateTimeFormat("en-CA",{timeZone:"America/Santiago",year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date());
+            if(targetDate!==today)throw new Error(`run_write_lifecycle service_date must equal current Santiago date ${today}`);
+          }else if(writeAssignment){
+            throw new Error("write_assignment_id is only accepted when run_write_lifecycle is enabled");
+          }
           process.stdout.write(url.origin);
           NODE
           printf 'url=%s\n' "$(cat "$RUNNER_TEMP/orbi-target.txt")" >> "$GITHUB_OUTPUT"
@@ -82,6 +107,18 @@ jobs:
           ORBI_QA_409: ${{ inputs.run_conflict && '1' || '0' }}
           ORBI_QA_VERCEL_BYPASS: ${{ secrets.ORBI_QA_VERCEL_BYPASS }}
         run: node scripts/qa-private-operations.mjs
+
+      - name: Run Administrator write lifecycle certification
+        if: inputs.role == 'administrator' && inputs.run_write_lifecycle
+        env:
+          ORBI_QA_BASE_URL: ${{ steps.target.outputs.url }}
+          ORBI_QA_EMAIL: ${{ secrets.ORBI_QA_ADMIN_EMAIL }}
+          ORBI_QA_PASSWORD: ${{ secrets.ORBI_QA_ADMIN_PASSWORD }}
+          ORBI_QA_COMMUNITY_ID: pc2
+          ORBI_QA_DATE: ${{ inputs.service_date }}
+          ORBI_QA_WRITE_ASSIGNMENT_ID: ${{ inputs.write_assignment_id }}
+          ORBI_QA_VERCEL_BYPASS: ${{ secrets.ORBI_QA_VERCEL_BYPASS }}
+        run: node scripts/qa-admin-write-lifecycle.mjs
 
       - name: Run Mayordomia E2E
         if: inputs.role == 'mayordomo'
