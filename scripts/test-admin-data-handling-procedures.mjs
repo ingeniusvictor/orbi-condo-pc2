@@ -14,11 +14,11 @@ assert.match(procedure,/NO REAL PII/i,"procedure must preserve no-real-PII bound
 for(const field of ["display_name","staff_function","coverage_eligible","active","disabled_at","active_until"]){
  assert.ok(procedure.includes(`\`${field}\``),`procedure must address controlled field ${field}`);
 }
-assert.match(baseSchema,/coverage_eligible boolean not null default true/,"staff coverage deactivation field must remain present in schema");
+assert.match(baseSchema,/coverage_eligible boolean not null default false/,"staff coverage eligibility must remain fail-closed by default");
 assert.match(baseSchema,/active boolean not null default true/,"staff active deactivation field must remain present in schema");
 assert.match(baseSchema,/disabled_at timestamptz/,"membership disabled_at must remain present in schema");
 assert.match(baseSchema,/active_until timestamptz/,"membership active_until must remain present in schema");
-console.log("PASS correction/deactivation draft maps only to existing technical controls");
+console.log("PASS correction/deactivation draft maps only to existing technical controls and coverage eligibility defaults closed");
 
 assert.match(procedure,/No borrar en cascada asignaciones, eventos, bitácoras, rondas o auditoría histórica/i,"staff deactivation must preserve history");
 assert.match(procedure,/no debe corregirse mediante `DELETE` o edición silenciosa/i,"historical evidence must not be silently rewritten/deleted");
