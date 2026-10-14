@@ -4,6 +4,12 @@ import {setOperationsRefreshCookie,setOperationsSessionCookie} from "../../../..
 
 const noStore={"Cache-Control":"private, no-store"};
 
+function safeRetryAfter(value:string|null):string|null{
+ if(!value||!/^\d{1,5}$/.test(value))return null;
+ const seconds=Number(value);
+ return Number.isInteger(seconds)&&seconds>=1&&seconds<=86_400?String(seconds):null;
+}
+
 export async function POST(req:Request){
  if(!trustedOrigin(req))return NextResponse.json({error:"Origen no autorizado"},{status:403,headers:noStore});
  if(!operationsBackendConfigured)return NextResponse.json({error:"Autenticación aún no configurada"},{status:503,headers:noStore});
@@ -18,6 +24,13 @@ export async function POST(req:Request){
  try{
   result=await operationsAuthFetch("token?grant_type=password",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email,password})});
  }catch{return NextResponse.json({error:"Servicio de autenticación temporalmente no disponible"},{status:503,headers:noStore});}
+ if(result.status===429){
+  const headers:Record<string,string>={...noStore};
+  const retryAfter=safeRetryAfter(result.headers.get("retry-after"));
+  if(retryAfter)headers["Retry-After"]=retryAfter;
+  return NextResponse.json({error:"Demasiados intentos. Intenta nuevamente más tarde."},{status:429,headers});
+ }
+ if(result.status>=500)return NextResponse.json({error:"Servicio de autenticación temporalmente no disponible"},{status:503,headers:noStore});
  if(!result.ok)return NextResponse.json({error:"Credenciales no válidas"},{status:401,headers:noStore});
  const session=await result.json() as {access_token?:unknown;refresh_token?:unknown;expires_in?:unknown};
  if(typeof session.access_token!=="string"||!session.access_token||typeof session.refresh_token!=="string"||!session.refresh_token)return NextResponse.json({error:"Sesión inválida"},{status:502,headers:noStore});
