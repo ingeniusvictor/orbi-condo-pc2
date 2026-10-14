@@ -9,6 +9,18 @@
   padding-bottom: max(112px, calc(88px + env(safe-area-inset-bottom))) !important;
 }
 
+.orbi-private-route button,
+.orbi-private-route input,
+.orbi-private-route select {
+  min-height: 44px !important;
+}
+
+.orbi-private-route :where(a, button, input, select):focus-visible {
+  outline: 3px solid #82eee8 !important;
+  outline-offset: 3px !important;
+  box-shadow: 0 0 0 2px #06131f !important;
+}
+
 .orbi-private-route .orbi-private-grid,
 .orbi-private-route .orbi-private-grid > *,
 .orbi-private-route .orbi-private-grid article {
@@ -50,11 +62,6 @@
   .orbi-private-route .orbi-private-grid select,
   .orbi-private-route .orbi-private-grid button {
     max-width: 100%;
-  }
-
-  .orbi-private-route .orbi-private-grid button,
-  .orbi-private-route main nav button {
-    min-height: 44px;
   }
 
   .orbi-private-route section[aria-label="Bitácora operativa reciente"] {
