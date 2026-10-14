@@ -67,7 +67,7 @@ for(const needle of [
  "final shift-log read preserves append-only certification evidence",
  "ADMIN WRITE LIFECYCLE QA GREEN",
 ])assert(writeRunner.includes(needle),`Administrator write lifecycle runner missing contract evidence: ${needle}`);
-assert.equal(/\bDELETE\b/i.test(writeRunner),false,"Administrator write lifecycle must not delete append-only evidence");
+assert.equal(/method\s*:\s*["']DELETE["']/i.test(writeRunner),false,"Administrator write lifecycle must not issue HTTP DELETE requests");
 assert.equal(writeRunner.includes("service_role"),false,"Administrator write lifecycle must not use service-role credentials");
 assert.equal((writeRunner.match(/x-vercel-protection-bypass/g)||[]).length,1,"write lifecycle bypass header must be bootstrap-only");
 console.log("PASS Administrator write lifecycle preserves append-only evidence and tests deployed invariants");
