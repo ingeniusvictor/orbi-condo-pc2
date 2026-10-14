@@ -23,12 +23,23 @@ assert.ok(firstLiveRead>firstSecretPrompt,"network-backed provisioning must occu
 assert.match(source,/DRY-RUN: no network request or mutation was performed\./,"dry-run output must make the no-mutation state explicit");
 assert.ok((source.match(/-AsSecureString/g)||[]).length>=2,"service key and role password must both be collected as SecureString values");
 
+assert.match(source,/\$ServerUserAgent = "orbi-pc2-staging-auth-provisioner\/1\.1"/,"secret-key calls must use an explicit backend User-Agent");
+assert.match(source,/UserAgent = \$ServerUserAgent/,"every staging HTTP request must override PowerShell's browser-like default User-Agent");
+assert.doesNotMatch(source,/\$ServerUserAgent\s*=\s*"Mozilla\//i,"backend User-Agent must never look like a browser");
+assert.match(source,/function New-ServiceHeaders/,"service-key header construction must be centralized");
+assert.match(source,/\$Key\.StartsWith\("sb_secret_"\)/,"new opaque Supabase secret keys must have an explicit compatibility path");
+assert.match(source,/apikey = \$Key/,"secret/service key must be sent via the apikey header");
+assert.doesNotMatch(source,/Authorization\s*=\s*"Bearer \$serviceKey"/,"opaque secret key must never be duplicated directly as Bearer authorization");
+assert.match(source,/\$headers\["Authorization"\] = "Bearer \$Key"/,"legacy service_role JWT compatibility may use Bearer only after key-format discrimination");
+assert.match(source,/Unsupported staging Auth Admin key format/,"unknown key formats must fail closed before network access");
+
 assert.match(source,/\/auth\/v1\/admin\/users/,"supported Auth Admin endpoint must be used");
 assert.match(source,/email_confirm = \$true/,"supported Auth Admin flow must explicitly confirm the synthetic QA email");
 assert.match(source,/\/rest\/v1\/memberships/,"membership reassignment must go through the staging API boundary");
 assert.match(source,/Prefer"] = "return=representation"/,"membership mutation must return evidence for exact-row verification");
 assert.match(source,/\/auth\/v1\/token\?grant_type=password/,"provisioner must verify real password sign-in");
 assert.match(source,/\/auth\/v1\/logout/,"verification session must be logged out");
+assert.match(source,/Authorization = "Bearer \$\(\$login\.access_token\)"/,"logout may use only the user session JWT as Bearer authorization");
 assert.match(source,/Method DELETE -Path "\/auth\/v1\/admin\/users\/\$UserId"/,"new Auth user must have a rollback deletion path");
 assert.match(source,/membership restored to the inert placeholder/i,"membership rollback must be explicit");
 
@@ -45,4 +56,5 @@ assert.match(source,/ORBI_QA_CONCIERGE_EMAIL/,"provisioner must name the Concier
 assert.match(source,/ORBI_QA_CONCIERGE_PASSWORD/,"provisioner must name the Concierge GitHub password secret without storing its value");
 
 console.log("PASS staging role Auth provisioner is staging-pinned, dry-run-first, supported-Auth-only and secret-safe");
+console.log("PASS Supabase sb_secret transport uses backend User-Agent + apikey-only semantics");
 console.log("STAGING ROLE AUTH PROVISIONER CONTRACT GREEN");
