@@ -6,7 +6,7 @@
 
 Este cuestionario está pensado para responderse sin conocimientos técnicos. Puede contestarse en una reunión, por escrito o tomando notas. Si una pregunta no está clara o todavía no existe una regla formal, puede responderse **“por definir”**.
 
-> Importante: en la copia que vuelva al repositorio no incluir RUT, teléfonos, correos personales, claves, contratos ni otros datos personales. Los nombres o contactos reales, si hicieran falta, se conservan sólo por el canal privado que defina el condominio.
+> Importante: en la copia que se entregue de vuelta a ORBI no incluir RUT, teléfonos, correos personales, claves, contratos ni otros datos personales. Los nombres o contactos reales, si hicieran falta, se conservan sólo por el canal privado que defina el condominio.
 
 ---
 
@@ -168,4 +168,4 @@ Fecha de revisión: ______________________
 
 Rol de quien revisa: ____________________
 
-**Este cuestionario sólo recopila el funcionamiento operativo. No autoriza datos reales en ORBI LIVING ni habilita Production.**
+**Este cuestionario sólo recopila el funcionamiento operativo. No autoriza el uso de datos reales ni pone ORBI LIVING en operación real por sí solo.**
