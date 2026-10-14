@@ -3,7 +3,7 @@
 ## Purpose
 This checklist is the hard boundary between the current synthetic staging system and any future use of real condominium information. **No real resident, worker, phone, RUT, plate, contract or private incident narrative may be loaded until every mandatory gate is explicitly closed.**
 
-Evidence snapshot: **2026-10-14 · Chile**. Canonical repository baseline at this update: `main@d220925ab07b32f1731944d0b302640941818f1a`. The active implementation/certification cut is **Administrator / Administración only**; see `docs/ADMINISTRATOR-ONLY-CURRENT-CUT.md`.
+Evidence snapshot: **2026-10-14 · Chile**. Canonical repository baseline before OC-PC2-81: `main@dac75aba7aa840a25b883645695cd773354680d8`. The active implementation/certification cut is **Administrator / Administración only**; see `docs/ADMINISTRATOR-ONLY-CURRENT-CUT.md`.
 
 Existing role contracts for Mayordomía, Conserjería, Committee and Resident remain useful as least-privilege regression specifications, but live provisioning and live E2E for those roles are deferred until an explicit future scope change.
 
@@ -38,7 +38,9 @@ Existing role contracts for Mayordomía, Conserjería, Committee and Resident re
 - [x] Staging QA runner requires an explicit target URL, blocks production by default, validates configured/anonymous preflight and verifies role/community do not drift after refresh.
 - [x] Manual staging E2E workflow is contract-protected as `workflow_dispatch` only, main-only, read-only by default and target-allowlisted before role secrets are exposed.
 - [x] Supported synthetic Administrator Auth account proves deployed login → session → refresh → logout in repeatable staging harness; run `38490618996` GREEN, repeated as part of run `38495816498` GREEN.
-- [ ] Durable app-level login abuse/rate-limit strategy approved.
+- [x] Login boundary preserves upstream Auth throttling semantics: `429` stays `429`, bounded numeric `Retry-After` may pass, upstream details/headers stay private, upstream `5xx` normalizes to `503`, and failed login paths issue no cookies. See `docs/ADMINISTRATOR-LOGIN-ABUSE-PROTECTION.md`.
+- [x] Durable login-abuse strategy is defined: Vercel Firewall per-IP edge limiting for `POST /api/auth/login` + existing app validation + Supabase Auth protections; process-local/in-memory counters are explicitly rejected as insufficient.
+- [ ] Publish and verify the durable Vercel Firewall login rate-limit rule only when project-level security changes are allowed to affect the intended Production boundary. It remains intentionally inactive during the current staging-only cut.
 - [ ] Production MFA/password policy approved.
 - [ ] Decide whether production upgrades Supabase to enable leaked-password protection, or document compensating controls.
 
@@ -143,14 +145,16 @@ The original private-operation foundation through P1AD was consolidated to `main
 - PR #62 `OC-PC2-75 · Exact staging role permission contract` merged; exact permission drift now fails closed;
 - PR #63 `OC-PC2-76 · Administrator write lifecycle E2E` merged; Actions run `38495816498` — GREEN;
 - PR #64 `OC-PC2-77 · Administrator browser UI QA` merged; Actions run `38497812117` — GREEN;
-- PR #65/#66 added future-role provisioning tooling and corrected new Supabase secret-key transport. The tooling is dormant under the current Administrator-only cut and does not create identities by itself.
+- PR #65/#66 added future-role provisioning tooling and corrected new Supabase secret-key transport. The tooling is dormant under the current Administrator-only cut and does not create identities by itself;
+- PR #67 `OC-PC2-80 · Administrator-only readiness consolidation` made the current scope boundary canonical;
+- OC-PC2-81 adds executable upstream-throttling semantics and defines the durable edge strategy without activating project-level Production traffic controls.
 
 Mayordomía and Conserjería steps were explicitly skipped in the Administrator write-lifecycle run. No successful provisioning or live role certification for those deferred roles is claimed.
 
 ## Current next closures — Administrator-only cut
 The meaningful remaining work is now:
 
-- durable login-abuse/rate-limit strategy;
+- durable Vercel Firewall login rate-limit activation when the Production security boundary is intentionally opened;
 - private-data governance decisions before any real data;
 - administration validation of the real PC2 operating procedure;
 - P1E independent restore when that frozen gate is explicitly reopened;
