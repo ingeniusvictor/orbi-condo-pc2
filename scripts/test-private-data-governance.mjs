@@ -32,7 +32,7 @@ function tableColumns(source,table){
  const bodyEnd=source.indexOf("\n);",bodyStart);
  assert.ok(bodyEnd>bodyStart,`schema table ${table} must have a parseable body`);
  const ignored=new Set(["primary","unique","foreign","check","constraint"]);
- return source.slice(bodyStart,bodyEnd).split("\n").map(line=>line.trim()).filter(Boolean).map(line=>line.match(/^([a-z_][a-z0-9_]*)\b/i)?.[1]??null).filter(name=>name&&!ignored.has(name));
+ return source.slice(bodyStart,bodyEnd).split("\n").map(line=>line.match(/^ ([a-z_][a-z0-9_]*)\b/i)?.[1]??null).filter(name=>name&&!ignored.has(name));
 }
 
 for(const [table,source] of Object.entries(schemaByTable)){
