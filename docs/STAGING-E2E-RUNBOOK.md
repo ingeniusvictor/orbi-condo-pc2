@@ -44,6 +44,36 @@ When dispatching `Synthetic Staging E2E` from reviewed `main`:
 
 `run_conflict=true` is accepted only for Administrator or Mayordomo. The workflow serializes E2E runs so two mutation checks cannot overlap.
 
+## Supported Mayordomía / Conserjería Auth provisioning
+The staging schema already contains inert synthetic placeholder identities and active `pc2` memberships for Mayordomía and Conserjería. Those placeholders intentionally have no usable password/identity and must **not** be repaired by direct database writes to the Auth schema.
+
+Use `scripts/provision-staging-role-auth.ps1` locally. It is pinned to project ref `drqjpzydgihrrdnkhewh`, community `pc2`, and only accepts `mayordomo` or `concierge`. It uses supported Supabase Auth Admin HTTP operations, moves exactly one active synthetic membership to the supported Auth identity, verifies a real password sign-in, logs that verification session out, and has rollback handling for a newly-created identity.
+
+The helper is dry-run by default. Review the plan first:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/provision-staging-role-auth.ps1 -Role mayordomo
+powershell -ExecutionPolicy Bypass -File scripts/provision-staging-role-auth.ps1 -Role concierge
+```
+
+To apply, obtain the **staging-only Supabase secret/service key** from the Supabase project dashboard and run locally:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/provision-staging-role-auth.ps1 -Role mayordomo -Apply
+powershell -ExecutionPolicy Bypass -File scripts/provision-staging-role-auth.ps1 -Role concierge -Apply
+```
+
+The helper prompts, with hidden input, for the staging Auth Admin key and the desired QA password. It does not persist or print either value. Never add the Auth Admin key to GitHub Actions, Vercel, repository files, chat, issues or PRs.
+
+The supported QA Auth emails are fixed synthetic reserved-domain addresses:
+
+```text
+Mayordomo: qa-mayordomo-pc2@example.com
+Concierge: qa-concierge-pc2@example.com
+```
+
+After each helper run reports `STAGING ROLE AUTH PROVISIONING GREEN`, configure the corresponding GitHub Actions email/password secrets using the same locally-entered password. Do not put those values in the repository or in this runbook.
+
 ## Local execution path
 The same harness can still be executed locally with environment variables. Before running `npm run qa:operations`:
 
@@ -51,7 +81,7 @@ The same harness can still be executed locally with environment variables. Befor
 2. The deployment must be configured against `orbi-living-pc2-staging` / community `pc2`.
 3. Use a **supported Supabase Auth account** whose email/password are stored only in local environment variables or an approved secret store.
 4. The expected operations role must already exist as an active server-side membership.
-5. Do not confirm users by direct SQL writes to `auth.users`.
+5. Do not confirm users by direct SQL writes to the Auth schema.
 6. Do not point the runner at the production hostname. The runner refuses `https://orbi-condo-pc2.vercel.app` unless `ORBI_QA_ALLOW_PRODUCTION=1`; that override is out of scope while production remains blocked.
 7. P1E backup/restore remains frozen and pending; this runbook does not claim or replace recovery evidence.
 
@@ -83,15 +113,16 @@ The runner performs a real HTTP flow through the deployed Next application:
 3. backend is configured and browser starts anonymous;
 4. password login;
 5. authenticated session resolves the expected community and role;
-6. dashboard read through RLS;
-7. role-specific privacy projection checks for Concierge/Committee;
-8. shift-log read when permitted;
-9. operational-round read when permitted;
-10. server continuity snapshot when permitted;
-11. refresh and re-check that role/community did not drift;
-12. optional concurrent stale-revision `200/409` test for a role with `manage_shift_schedule`;
-13. logout;
-14. anonymous access denied again.
+6. exact canonical permission set is verified;
+7. dashboard read through RLS;
+8. role-specific privacy projection checks for Concierge/Committee;
+9. shift-log read when permitted;
+10. operational-round read when permitted;
+11. server continuity snapshot when permitted;
+12. refresh and re-check that role, community and exact permission set did not drift;
+13. optional concurrent stale-revision `200/409` test for a role with `manage_shift_schedule`;
+14. logout;
+15. anonymous access denied again.
 
 Private responses must retain `no-store`, `nosniff` and no CORS opt-in where the runner asserts them.
 
@@ -106,13 +137,13 @@ Do not use the 409 option with Concierge because it requires `manage_shift_sched
 
 ## Expected role runs
 ### Administrator
-Use first because one supported confirmed synthetic Administrator account already exists in staging. It can prove the full login/session/refresh/logout path and, optionally, the reversible HTTP 409 mapping.
+One supported confirmed synthetic Administrator account already exists in staging and has passed the login/session/refresh/logout flow and reversible HTTP 409 mapping.
 
 ### Mayordomo
-Run only after the synthetic Mayordomo Auth account has been confirmed through a supported Auth flow. Expected: operational administration available, resident/contract administration absent.
+Provision the supported synthetic Auth account with the local helper first. Expected E2E result: operational administration available, exact canonical permission set retained across refresh, resident/contract administration absent.
 
 ### Concierge
-Run only after the synthetic Concierge Auth account has been confirmed through a supported Auth flow. Expected: operational execution available; shift/incident administration denied; dashboard exposes no private staff catalog or assignee linkage.
+Provision the supported synthetic Auth account with the local helper first. Expected E2E result: operational execution available, exact canonical permission set retained across refresh, shift/incident administration denied, and dashboard exposes no private staff catalog or assignee linkage.
 
 ### Committee / Resident
 Optional for live HTTP role confirmation through local execution. Committee must remain read/review-only; Resident must not acquire private operational access.
@@ -129,7 +160,7 @@ For each live staging run, record in the corresponding PR/readiness document:
 - whether `ORBI_QA_409=1` was used;
 - whether cleanup completed without warning.
 
-Never paste cookies, access tokens, refresh tokens, anon keys, service-role keys, bypass secrets or passwords into GitHub.
+Never paste cookies, access tokens, refresh tokens, anon keys, service-role/secret keys, bypass secrets or passwords into GitHub.
 
 ## Gates this can close
 A successful supported staging run can provide evidence for:
@@ -140,7 +171,7 @@ A successful supported staging run can provide evidence for:
 
 It does **not** close:
 
-- visual/responsive/accessibility QA;
+- visual/responsive/accessibility QA for Mayordomía/Conserjería;
 - append-only shift-log write lifecycle and round write lifecycle unless those workflows are separately exercised and documented;
 - private data governance approvals;
 - P1E independent restore;
@@ -148,7 +179,9 @@ It does **not** close:
 - production infrastructure/security gates.
 
 ## Current blocker
-Staging currently has active synthetic memberships/users for Concierge and Mayordomo, but their Auth email confirmation is still pending. The available connector does not expose Supabase Auth Admin operations, so the project intentionally does not bypass that gate through direct SQL changes to `auth.users`.
+The repository now has a reviewed-path design for supported local provisioning of the two missing synthetic role identities. The remaining live blocker is operational and secret-bearing: execute the helper locally with the staging-only Supabase Auth Admin key, store the resulting role email/password pairs in GitHub Actions secrets, then dispatch `Synthetic Staging E2E` once for Mayordomo and once for Concierge.
+
+No direct Auth-table SQL workaround is permitted.
 
 Current state remains:
 
