@@ -3,7 +3,9 @@
 ## Purpose
 This checklist is the hard boundary between the current synthetic staging system and any future use of real condominium information. **No real resident, worker, phone, RUT, plate, contract or private incident narrative may be loaded until every mandatory gate is explicitly closed.**
 
-Evidence snapshot: **2026-10-10/11 · Chile**. Current stack reaches **P1AD (#58 candidate)**, remains draft/stacked and **SYNTHETIC STAGING ONLY**.
+Evidence snapshot: **2026-10-14 · Chile**. Canonical repository baseline at this update: `main@d220925ab07b32f1731944d0b302640941818f1a`. The active implementation/certification cut is **Administrator / Administración only**; see `docs/ADMINISTRATOR-ONLY-CURRENT-CUT.md`.
+
+Existing role contracts for Mayordomía, Conserjería, Committee and Resident remain useful as least-privilege regression specifications, but live provisioning and live E2E for those roles are deferred until an explicit future scope change.
 
 ## G0 · Product scope
 - [x] ORBI LIVING operational scope documented: shifts, coverage, handoff, incidents, escalation and administrative traceability.
@@ -11,6 +13,7 @@ Evidence snapshot: **2026-10-10/11 · Chile**. Current stack reaches **P1AD (#58
 - [x] DS19 rental policing/investigation remains outside product scope.
 - [x] ComunidadFeliz coexistence documented; no unverified API/integration assumed.
 - [x] P2 notifications/escalation explicitly blocked until the real procedure is validated with administration.
+- [x] Current live-certification scope explicitly pinned to Administrator only; no additional live role identities are required or authorized in this cut.
 
 ## G1 · Public/frontend safety
 - [x] Public demos use synthetic/generic identities only.
@@ -18,8 +21,8 @@ Evidence snapshot: **2026-10-10/11 · Chile**. Current stack reaches **P1AD (#58
 - [x] Build/typecheck gates are active.
 - [x] `/operaciones` and `/conserjeria` render with `noindex` in the runtime security smoke.
 - [x] Runtime security-header contract covers `nosniff`, Referrer-Policy, SAMEORIGIN, restrictive Permissions-Policy, no `X-Powered-By`, private `no-store` and no accidental CORS opt-in on private APIs.
-- [ ] Manual responsive visual QA completed at 390×844, 430×932, 768×1024, 1440×900 and 1920×1080.
-- [ ] Keyboard/focus/accessibility visual pass recorded.
+- [x] Administrator browser responsive QA completed at 390×844, 430×932, 768×1024, 1440×900 and 1920×1080 in `Administrator UI QA` run `38497812117`.
+- [x] Administrator keyboard/focus/accessibility browser pass recorded in run `38497812117`: keyboard login, visible focus, semantic labels, contained controls, no horizontal overflow and successful logout boundary.
 
 ## G2 · Authentication lifecycle
 - [x] Server-side Auth boundary exists.
@@ -33,13 +36,18 @@ Evidence snapshot: **2026-10-10/11 · Chile**. Current stack reaches **P1AD (#58
 - [x] Hermetic real-Next lifecycle proves login → session → refresh → logout, cookie rotation, revocation and return to anonymous without external network.
 - [x] Hermetic failure-mode contract proves invalid access, disabled/future/expired/unknown memberships, missing/invalid refresh and revoked access all fail closed.
 - [x] Staging QA runner requires an explicit target URL, blocks production by default, validates configured/anonymous preflight and verifies role/community do not drift after refresh.
-- [x] Manual staging E2E workflow is contract-protected as `workflow_dispatch` only, main-only, read-only and target-allowlisted before role secrets are exposed.
-- [ ] Supported synthetic Auth account proves login → session → refresh → logout against the deployed staging backend in the repeatable harness.
-- [ ] Synthetic Mayordomía account confirmed through a supported Auth flow and role UI tested.
-- [ ] Synthetic Conserjería account confirmed through a supported Auth flow and role UI tested.
+- [x] Manual staging E2E workflow is contract-protected as `workflow_dispatch` only, main-only, read-only by default and target-allowlisted before role secrets are exposed.
+- [x] Supported synthetic Administrator Auth account proves deployed login → session → refresh → logout in repeatable staging harness; run `38490618996` GREEN, repeated as part of run `38495816498` GREEN.
 - [ ] Durable app-level login abuse/rate-limit strategy approved.
 - [ ] Production MFA/password policy approved.
 - [ ] Decide whether production upgrades Supabase to enable leaked-password protection, or document compensating controls.
+
+### Deferred role activation
+These are **future expansion gates**, not active blockers for the current Administrator-only cut:
+
+- [ ] If Mayordomía is later activated, provision/confirm its synthetic Auth identity through a supported flow and certify its UI/session boundary.
+- [ ] If Conserjería is later activated, provision/confirm its synthetic Auth identity through a supported flow and certify its UI/session boundary.
+- [ ] Committee/Resident live identities remain unprovisioned unless a future product cut explicitly requires them.
 
 ## G3 · Authorization / tenant isolation
 - [x] RLS enabled on operational/private tables.
@@ -53,7 +61,8 @@ Evidence snapshot: **2026-10-10/11 · Chile**. Current stack reaches **P1AD (#58
 - [x] Permission matrix is an executable CI contract: Resident has no operational permissions; Committee remains read/review; Conserjería cannot administer coverage/incidents/contracts.
 - [x] Hermetic Route Handler contract proves the same role matrix at the real server HTTP authorization boundary before resource access.
 - [x] Dashboard privacy projection contract proves Conserjería never queries/receives `staff_private`, Committee omits staff/activity streams and shift projections do not expose private assignee linkage.
-- [ ] Repeat the role matrix through real HTTP/UI sessions for confirmed synthetic Mayordomía and Conserjería accounts.
+- [x] Administrator staging session is live-certified against the canonical exact-permission contract.
+- [ ] Live HTTP/UI repetition for deferred roles only if/when those roles are explicitly activated in a future cut.
 
 ## G4 · Controlled writes and operational continuity
 - [x] Server commands exist for shift management, gap reporting, handoff, incident report and incident management.
@@ -72,8 +81,8 @@ Evidence snapshot: **2026-10-10/11 · Chile**. Current stack reaches **P1AD (#58
 - [x] Runtime anonymous smoke proves representative private writes stop at Origin/Auth barrier before validation/persistence.
 - [x] Hermetic HTTP conflict contract proves stale revision before PATCH, invalid transition, zero-row compare-and-swap race → 409 and valid scoped update.
 - [x] Staging QA runner wraps the optional concurrent 200/409 fixture in best-effort `finally` restoration and surfaces cleanup warnings.
-- [ ] HTTP 409 conflict mapping proven against the deployed staging backend with a real supported synthetic Auth session (`ORBI_QA_409=1`).
-- [ ] Authenticated HTTP E2E proves shift-log open/entry/close and round start/check/complete through the deployed app.
+- [x] HTTP 409 conflict mapping proven against deployed staging with the supported Administrator synthetic Auth session; run `38490781620` GREEN with synthetic fixture restored to `planned`.
+- [x] Authenticated deployed Administrator HTTP E2E proves shift-log open/entry/close and round start/check/complete. Run `38495816498` GREEN also proves open-round close blocking, empty-round rejection, duplicate checkpoint rejection, completed-round immutability and final append-only evidence.
 
 ## G5 · Privacy / data governance
 - [x] Public/private data boundary documented.
@@ -100,7 +109,7 @@ Evidence snapshot: **2026-10-10/11 · Chile**. Current stack reaches **P1AD (#58
 - [ ] Recovery time and failure notes recorded privately.
 - [ ] Backup cadence and responsible person approved.
 
-**Rule:** P1E is not complete merely because later P1 features are GREEN. Backup + independent restore remains a hard blocker for real data.
+**Rule:** P1E is not complete merely because later P1 features are GREEN. Backup + independent restore remains a hard blocker for real data. Current project direction keeps this gate frozen/pending until explicitly reopened.
 
 ## G7 · Operational procedure
 - [ ] Exact Sunday/holiday night coverage schedule formally validated; do not convert an inferred block into fact until confirmed.
@@ -109,44 +118,49 @@ Evidence snapshot: **2026-10-10/11 · Chile**. Current stack reaches **P1AD (#58
 - [ ] Shift handoff verification procedure confirmed.
 - [ ] Emergency escalation contacts/channel and after-hours path confirmed.
 - [ ] Authorized replacement-pool rule confirmed by administration.
-- [ ] Mayordomía/administration validate the practical meaning of bitácora, rounds and continuity statuses before pilot.
+- [ ] Administration validates the practical meaning of bitácora, rounds and continuity statuses before pilot.
+
+No live Mayordomía/Conserjería identity is required to conduct this current administrative procedure-validation work.
 
 ## G8 · Production infrastructure
 - [ ] Production Supabase project/plan explicitly approved; staging project must not silently become production.
 - [ ] Production secrets created independently from staging.
 - [x] Vercel environment scopes reviewed read-only: current staging `SUPABASE_URL`, `SUPABASE_ANON_KEY` and `ORBI_COMMUNITY_ID` are Preview-only and Vercel reports no hidden Production env variables. See `docs/VERCEL-PREVIEW-ISOLATION.md`.
 - [x] Vercel Git binding verified: project `orbi-condo-pc2` / team `orbi4` points to `ingeniusvictor/orbi-condo-pc2`.
-- [x] Runtime parity certified in Quality Gate #217: full contract remains GREEN on Node 22 and build/Auth/runtime security remain GREEN on Node 24, matching the major currently configured in Vercel.
+- [x] Node 22 full contract + Node 24 Vercel-runtime parity continue GREEN through current main Quality Gates.
+- [x] Automatic Production deployment from current `main` is disabled by repository release control; merges after that control show zero new Vercel deployments for their canonical main SHAs unless a deliberate Preview exists for the feature head.
 - [ ] Production region/data residency decision documented.
 - [ ] Monitoring/error handling strategy enabled.
 - [ ] Rollback procedure for application and database changes approved.
 
-Historical Vercel Production deployments from older `main` commits exist, but they predate the current P1 private-operations stack and are **not** evidence that P1F–P1AD has been promoted or approved for production.
+Historical Vercel Production deployments from older `main` commits exist, but they predate the current P1 private-operations stack and are **not** evidence that the current private stack has been promoted or approved for production.
 
-## Current evidence chain
-The current private-operation sequence is:
+## Current Administrator evidence chain
+The original private-operation foundation through P1AD was consolidated to `main`, then the Administrator live-certification sequence closed the previously external gates:
 
-`#33 P1F Private Workspace → #34 P1G Conserjería → #35 P1H Shift Log/Handoff → #36 P1I Rounds → #38 P1J Continuity Board → #39 P1K Server Snapshot → #40 P1L Continuity Contracts → #41 P1M Operations Contracts → #42 P1N Anonymous Runtime Smoke → #43 P1O Private API Cache Hardening → #44 P1P Readiness Matrix → #45 P1Q Private Boundary → #46 P1R CI Hardening → #47 P1S Build Clean → #48 P1T Cookie Contract → #49 P1U Hermetic Auth → #50 P1V Auth Failure Modes → #51 P1W Runtime Headers → #52 P1X Conflict Contract → #53 P1Y Role HTTP Contract → #54 P1Z Dashboard Privacy → #55 P1AA Staging QA Runner Safety → #56 P1AB Manual Staging E2E → #57 P1AC Preview Infrastructure Isolation → P1AD Node Runtime Parity`
+- Administrator clean staging Auth/HTTP: Actions run `38490618996` — GREEN;
+- Administrator reversible HTTP 409: Actions run `38490781620` — GREEN;
+- PR #62 `OC-PC2-75 · Exact staging role permission contract` merged; exact permission drift now fails closed;
+- PR #63 `OC-PC2-76 · Administrator write lifecycle E2E` merged; Actions run `38495816498` — GREEN;
+- PR #64 `OC-PC2-77 · Administrator browser UI QA` merged; Actions run `38497812117` — GREEN;
+- PR #65/#66 added future-role provisioning tooling and corrected new Supabase secret-key transport. The tooling is dormant under the current Administrator-only cut and does not create identities by itself.
 
-All remain stacked/draft unless explicitly changed. Do not merge out of order.
+Mayordomía and Conserjería steps were explicitly skipped in the Administrator write-lifecycle run. No successful provisioning or live role certification for those deferred roles is claimed.
 
-## Staging E2E handoff
-Use `docs/STAGING-E2E-RUNBOOK.md` before any live Auth/HTTP QA. The exact deployment URL must be explicit; credentials remain outside Git; production remains refused by default.
+## Current next closures — Administrator-only cut
+The meaningful remaining work is now:
 
-Infrastructure-scope and runtime-parity evidence are recorded in `docs/VERCEL-PREVIEW-ISOLATION.md`. Those audits do not approve production credentials, deployment promotion or production data.
+- durable login-abuse/rate-limit strategy;
+- private-data governance decisions before any real data;
+- administration validation of the real PC2 operating procedure;
+- P1E independent restore when that frozen gate is explicitly reopened;
+- production region/monitoring/rollback and authentication-policy decisions before any production enablement.
 
-The next meaningful closures are external evidence, not additional assumptions:
-- supported synthetic Administrator staging run;
-- supported Auth confirmation + staging runs for Mayordomía and Conserjería;
-- deployed HTTP 409 evidence;
-- browser/visual/accessibility QA;
-- independent P1E restore;
-- validated PC2 operating procedure;
-- production region/monitoring/rollback decisions.
+Do **not** treat provisioning Mayordomía/Conserjería as the current next step. See `docs/ADMINISTRATOR-ONLY-CURRENT-CUT.md`.
 
 ## Decision rule
-Production with real data is **BLOCKED** while any mandatory unchecked item above remains open.
+Production with real data is **BLOCKED** while any mandatory unchecked item for the selected production scope remains open.
 
-Current state: **SYNTHETIC STAGING ONLY · PRODUCTION BLOCKED · P1E RESTORE NOT PROVEN**.
+Current state: **ADMINISTRATOR ONLY · SYNTHETIC STAGING ONLY · PRODUCTION BLOCKED · P1E RESTORE NOT PROVEN**.
 
 When a gate is closed, record evidence in the relevant PR/document. Do not mark an item complete from assumption, code review alone, or a build succeeding when the gate specifically requires live/visual/restore testing.
