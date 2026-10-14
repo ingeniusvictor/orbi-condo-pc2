@@ -1,5 +1,7 @@
 import assert from "node:assert/strict";
+import {readFileSync} from "node:fs";
 import {spawnSync} from "node:child_process";
+import {EXPECTED_ROLE_PERMISSIONS,assertExactRolePermissions} from "./qa-role-permissions.mjs";
 
 const script="scripts/qa-private-operations.mjs";
 const cleanBaseEnv={...process.env};
@@ -19,6 +21,24 @@ function expectExit2(result,label,needle){
  assert.equal(result.status,2,`${label} should fail closed with exit 2; output=${result.output}`);
  assert.match(result.output,new RegExp(needle,"i"),`${label} should explain rejection`);
 }
+function sorted(values){return [...values].sort()}
+
+const permissionSource=readFileSync("data/operations-permissions.ts","utf8");
+for(const role of ["administrator","committee","concierge","mayordomo","resident"]){
+ const marker=`${role}: [`;
+ const start=permissionSource.indexOf(marker);
+ assert.notEqual(start,-1,`canonical permission source missing role ${role}`);
+ const contentStart=start+marker.length;
+ const end=permissionSource.indexOf("]",contentStart);
+ assert.notEqual(end,-1,`canonical permission source has unterminated role ${role}`);
+ const canonical=[...permissionSource.slice(contentStart,end).matchAll(/"([^"]+)"/g)].map((match)=>match[1]);
+ assert.deepEqual(sorted(EXPECTED_ROLE_PERMISSIONS[role]),sorted(canonical),`QA permission contract drifted from canonical role ${role}`);
+ assert.equal(assertExactRolePermissions(role,canonical),canonical.length,`exact permission assertion failed for canonical role ${role}`);
+}
+assert.throws(()=>assertExactRolePermissions("concierge",[...EXPECTED_ROLE_PERMISSIONS.concierge,"manage_shift_schedule"]),/unexpected=.*manage_shift_schedule/i);
+assert.throws(()=>assertExactRolePermissions("mayordomo",EXPECTED_ROLE_PERMISSIONS.mayordomo.filter((permission)=>permission!=="manage_incident")),/missing=.*manage_incident/i);
+assert.throws(()=>assertExactRolePermissions("concierge",[...EXPECTED_ROLE_PERMISSIONS.concierge,"report_incident"]),/duplicates/i);
+console.log("PASS QA exact-permission matrix matches canonical role contract and fails closed on drift");
 
 const missingBase=run();
 expectExit2(missingBase,"missing base URL","Missing ORBI_QA_BASE_URL");
