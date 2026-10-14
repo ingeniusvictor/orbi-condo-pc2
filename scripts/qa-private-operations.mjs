@@ -1,3 +1,5 @@
+import {assertExactRolePermissions} from "./qa-role-permissions.mjs";
+
 const rawBaseUrl=(process.env.ORBI_QA_BASE_URL||"").trim();
 const email=process.env.ORBI_QA_EMAIL||"";
 const password=process.env.ORBI_QA_PASSWORD||"";
@@ -147,7 +149,8 @@ async function main(){
  assert(session.payload?.role===expectedRole,`expected role ${expectedRole}, received ${session.payload?.role}`);
  assert(session.payload?.communityId===expectedCommunityId,`expected community ${expectedCommunityId}, received ${session.payload?.communityId}`);
  const permissions=session.payload?.permissions??[];
- console.log(`PASS session authenticated · community=${session.payload.communityId} · role=${session.payload.role} · permissions=${permissions.length}`);
+ const permissionCount=assertExactRolePermissions(expectedRole,permissions);
+ console.log(`PASS session authenticated · community=${session.payload.communityId} · role=${session.payload.role} · exact-permissions=${permissionCount}`);
 
  const dashboard=await request(`/api/operations/dashboard?date=${encodeURIComponent(date)}`);
  assert(dashboard.response.status===200,"private dashboard did not return 200");
@@ -193,7 +196,8 @@ async function main(){
  assert(sessionAfterRefresh.payload?.authenticated===true,"session was not authenticated after refresh");
  assert(sessionAfterRefresh.payload?.communityId===expectedCommunityId,"community changed after refresh");
  assert(sessionAfterRefresh.payload?.role===expectedRole,"role changed after refresh");
- console.log("PASS refresh rotated/continued authenticated session without scope drift");
+ assertExactRolePermissions(expectedRole,sessionAfterRefresh.payload?.permissions);
+ console.log("PASS refresh rotated/continued authenticated session without role or permission drift");
 
  let conflictAssignmentId=null;
  if(runConflict){
