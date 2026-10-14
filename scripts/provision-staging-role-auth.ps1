@@ -14,6 +14,7 @@ $ProjectRef = "drqjpzydgihrrdnkhewh"
 $BaseUrl = "https://drqjpzydgihrrdnkhewh.supabase.co"
 $CommunityId = "pc2"
 $QaScope = "synthetic-staging-pc2"
+$ServerUserAgent = "orbi-pc2-staging-auth-provisioner/1.1"
 
 $RoleConfig = @{
     mayordomo = @{
@@ -46,6 +47,30 @@ function Convert-SecureValueToPlainText {
     }
 }
 
+function New-ServiceHeaders {
+    param([Parameter(Mandatory = $true)][string]$Key)
+
+    $headers = @{
+        apikey = $Key
+        Accept = "application/json"
+    }
+
+    if ($Key.StartsWith("sb_secret_")) {
+        # New Supabase opaque secret keys belong only in the apikey header.
+        # The Supabase gateway translates them to service_role internally.
+        return $headers
+    }
+
+    $jwtParts = @($Key.Split('.'))
+    if ($jwtParts.Count -eq 3) {
+        # Legacy service_role API keys are JWTs and remain compatible with Bearer auth.
+        $headers["Authorization"] = "Bearer $Key"
+        return $headers
+    }
+
+    throw "Unsupported staging Auth Admin key format. Use an sb_secret_ key or the legacy service_role JWT from this staging project."
+}
+
 function Invoke-OrbiStagingRequest {
     param(
         [Parameter(Mandatory = $true)][ValidateSet("GET", "POST", "PATCH", "PUT", "DELETE")][string]$Method,
@@ -63,6 +88,7 @@ function Invoke-OrbiStagingRequest {
         Uri = $uri
         Method = $Method
         Headers = $Headers
+        UserAgent = $ServerUserAgent
         ErrorAction = "Stop"
     }
 
@@ -189,6 +215,7 @@ $password = $null
 $newUserId = $null
 $userWasCreated = $false
 $membershipWasMoved = $false
+$adminHeaders = $null
 
 try {
     $serviceKey = Convert-SecureValueToPlainText $serviceKeySecure
@@ -201,11 +228,7 @@ try {
         throw "Synthetic QA password must be at least 20 characters."
     }
 
-    $adminHeaders = @{
-        apikey = $serviceKey
-        Authorization = "Bearer $serviceKey"
-        Accept = "application/json"
-    }
+    $adminHeaders = New-ServiceHeaders -Key $serviceKey
 
     $users = Get-AdminUsers -Headers $adminHeaders
     $placeholder = Find-ExactlyOneUserByEmail -Users $users -Email $config.PlaceholderEmail
@@ -271,7 +294,8 @@ try {
     }
     Write-Host "PASS active role membership verified"
 
-    $login = Invoke-OrbiStagingRequest -Method POST -Path "/auth/v1/token?grant_type=password" -Headers @{ apikey = $serviceKey } -Body @{
+    $loginHeaders = New-ServiceHeaders -Key $serviceKey
+    $login = Invoke-OrbiStagingRequest -Method POST -Path "/auth/v1/token?grant_type=password" -Headers $loginHeaders -Body @{
         email = $config.TargetEmail
         password = $password
     }
@@ -280,10 +304,11 @@ try {
     }
     Write-Host "PASS password sign-in verified without exposing tokens"
 
-    $null = Invoke-OrbiStagingRequest -Method POST -Path "/auth/v1/logout" -Headers @{
+    $logoutHeaders = @{
         apikey = $serviceKey
         Authorization = "Bearer $($login.access_token)"
     }
+    $null = Invoke-OrbiStagingRequest -Method POST -Path "/auth/v1/logout" -Headers $logoutHeaders
     Write-Host "PASS verification session logged out"
 
     Write-Host "STAGING ROLE AUTH PROVISIONING GREEN"
@@ -292,7 +317,7 @@ try {
     Write-Host "Never paste the password or staging Auth Admin key into chat, issues, PRs, repository files or Vercel environment variables."
 }
 catch {
-    if ($membershipWasMoved -and $null -ne $newUserId) {
+    if ($membershipWasMoved -and $null -ne $newUserId -and $null -ne $adminHeaders) {
         try {
             Set-MembershipUserId -Headers $adminHeaders -FromUserId $newUserId -ToUserId $config.PlaceholderId
             Write-Warning "QA rollback: synthetic membership restored to the inert placeholder."
@@ -302,7 +327,7 @@ catch {
             Write-Warning "QA rollback warning: membership restoration failed. Stop and review staging manually before any retry."
         }
     }
-    if ($userWasCreated -and $null -ne $newUserId -and -not $membershipWasMoved) {
+    if ($userWasCreated -and $null -ne $newUserId -and -not $membershipWasMoved -and $null -ne $adminHeaders) {
         Remove-AuthUserQuietly -Headers $adminHeaders -UserId $newUserId
     }
     throw
@@ -312,4 +337,5 @@ finally {
     $password = $null
     $serviceKeySecure = $null
     $passwordSecure = $null
+    $adminHeaders = $null
 }
