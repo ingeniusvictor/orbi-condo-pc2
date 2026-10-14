@@ -36,7 +36,7 @@ function tableColumns(source,table){
 }
 
 for(const [table,source] of Object.entries(schemaByTable)){
- assert.match(inventory,new RegExp(`### \\`${table}\\``),`inventory must contain table ${table}`);
+ assert.ok(inventory.includes(`### \`${table}\``),`inventory must contain table ${table}`);
  const columns=tableColumns(source,table);
  assert.ok(columns.length>0,`${table} must expose inventory columns`);
  for(const column of columns){
