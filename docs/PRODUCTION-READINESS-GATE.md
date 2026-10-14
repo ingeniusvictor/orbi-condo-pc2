@@ -3,7 +3,7 @@
 ## Purpose
 This checklist is the hard boundary between the current synthetic staging system and any future use of real condominium information. **No real resident, worker, phone, RUT, plate, contract or private incident narrative may be loaded until every mandatory gate is explicitly closed.**
 
-Evidence snapshot: **2026-10-14 · Chile**. Canonical repository baseline before OC-PC2-81: `main@dac75aba7aa840a25b883645695cd773354680d8`. The active implementation/certification cut is **Administrator / Administración only**; see `docs/ADMINISTRATOR-ONLY-CURRENT-CUT.md`.
+Evidence snapshot: **2026-10-14 · Chile**. Canonical repository baseline before OC-PC2-82: `main@ca4f633bd1628d9147518a2daf11d2a98c404706`. The active implementation/certification cut is **Administrator / Administración only**; see `docs/ADMINISTRATOR-ONLY-CURRENT-CUT.md`.
 
 Existing role contracts for Mayordomía, Conserjería, Committee and Resident remain useful as least-privilege regression specifications, but live provisioning and live E2E for those roles are deferred until an explicit future scope change.
 
@@ -92,7 +92,10 @@ These are **future expansion gates**, not active blockers for the current Admini
 - [x] Current private operational surfaces use structured fields and synthetic references; no new narrative-free-form PII channel was introduced.
 - [x] Client/server boundary contract prevents client modules from directly importing Supabase/server-only access or tracking private environment material.
 - [x] Continuity and dashboard projections have executable minimization contracts.
-- [ ] Private field inventory approved: exact fields, purpose, retention and roles for access.
+- [x] Technical field-level inventory reconciled against the current staging schema without reading row contents; every current private operational table/field is recorded in `docs/ADMINISTRATOR-PRIVATE-DATA-INVENTORY.md`.
+- [x] CI contract protects key Administrator minimization rules: assignee UUID stays server-side in shift projection, private incident reference is not returned, historical `note_private` is not queried by the dashboard, and shift-log/round evidence remains structured.
+- [x] Historical `shift_events.note_private` is explicitly classified as prohibited for real data until a future deprecation/constrained-vocabulary/governed-narrative decision is approved.
+- [ ] Private field inventory **approved for real-data use**: exact business purpose, retention and authorized access must still be signed off. Technical inventory alone does not close this gate.
 - [ ] Procedure approved for staff/contact data correction and deactivation.
 - [ ] Audit access and retention approved.
 - [ ] Private document storage approach approved; no private files exposed via public routes or repo.
@@ -147,15 +150,18 @@ The original private-operation foundation through P1AD was consolidated to `main
 - PR #64 `OC-PC2-77 · Administrator browser UI QA` merged; Actions run `38497812117` — GREEN;
 - PR #65/#66 added future-role provisioning tooling and corrected new Supabase secret-key transport. The tooling is dormant under the current Administrator-only cut and does not create identities by itself;
 - PR #67 `OC-PC2-80 · Administrator-only readiness consolidation` made the current scope boundary canonical;
-- OC-PC2-81 adds executable upstream-throttling semantics and defines the durable edge strategy without activating project-level Production traffic controls.
+- PR #68 `OC-PC2-81 · Administrator login throttle semantics` added executable upstream-throttling semantics and defined the durable edge strategy without activating project-level Production traffic controls;
+- OC-PC2-82 adds the exact technical private-data inventory and an executable minimization contract without approving or loading real data.
 
 Mayordomía and Conserjería steps were explicitly skipped in the Administrator write-lifecycle run. No successful provisioning or live role certification for those deferred roles is claimed.
 
 ## Current next closures — Administrator-only cut
 The meaningful remaining work is now:
 
+- formal business-purpose/retention/access approval for the technical private-data inventory;
+- staff/access correction and deactivation procedure;
+- audit access/retention procedure;
 - durable Vercel Firewall login rate-limit activation when the Production security boundary is intentionally opened;
-- private-data governance decisions before any real data;
 - administration validation of the real PC2 operating procedure;
 - P1E independent restore when that frozen gate is explicitly reopened;
 - production region/monitoring/rollback and authentication-policy decisions before any production enablement.
