@@ -1,0 +1,74 @@
+name: Administrator UI QA
+
+on:
+  workflow_dispatch:
+    inputs:
+      target_url:
+        description: Exact ORBI LIVING orbi4 Preview origin
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: admin-ui-qa-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  browser:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Checkout reviewed default branch
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+
+      - name: Setup Node
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
+        with:
+          node-version: 22
+
+      - name: Validate requested target before secrets
+        id: target
+        env:
+          TARGET_URL: ${{ inputs.target_url }}
+        run: |
+          set -euo pipefail
+          node --input-type=module <<'NODE' > "$RUNNER_TEMP/orbi-ui-target.txt"
+          const raw=(process.env.TARGET_URL||"").trim();
+          let url;
+          try{url=new URL(raw)}catch{throw new Error("target_url must be an absolute URL")}
+          if(url.protocol!=="https:"||url.username||url.password||url.hash)throw new Error("target_url must be a credential-free HTTPS origin");
+          if(url.pathname!=="/"||url.search)throw new Error("target_url must contain only the deployment origin");
+          if(url.hostname==="orbi-condo-pc2.vercel.app")throw new Error("production hostname is forbidden for synthetic Administrator UI QA");
+          if(!/^orbi-condo-pc2-[a-z0-9-]+-orbi4\.vercel\.app$/.test(url.hostname))throw new Error("target_url is not an ORBI LIVING orbi4 Preview hostname");
+          process.stdout.write(url.origin);
+          NODE
+          printf 'url=%s\n' "$(cat "$RUNNER_TEMP/orbi-ui-target.txt")" >> "$GITHUB_OUTPUT"
+
+      - name: Install pinned Playwright runtime
+        run: npm install --no-save --ignore-scripts --package-lock=false playwright@1.56.1
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Run Administrator browser UI QA
+        env:
+          ORBI_QA_BASE_URL: ${{ steps.target.outputs.url }}
+          ORBI_QA_EMAIL: ${{ secrets.ORBI_QA_ADMIN_EMAIL }}
+          ORBI_QA_PASSWORD: ${{ secrets.ORBI_QA_ADMIN_PASSWORD }}
+          ORBI_QA_VERCEL_BYPASS: ${{ secrets.ORBI_QA_VERCEL_BYPASS }}
+          ORBI_QA_ARTIFACT_DIR: artifacts/admin-ui
+        run: node scripts/qa-admin-ui.mjs
+
+      - name: Upload browser QA evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: administrator-ui-qa-${{ github.run_id }}
+          path: artifacts/admin-ui
+          if-no-files-found: warn
+          retention-days: 7
