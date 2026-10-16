@@ -5,6 +5,7 @@ import PrivateOperationsViewport from "../components/PrivateOperationsViewport";
 import "./globals.css";
 import "./oc-pc2.css";
 import "./navigation.css";
+import "./portal-priority.css";
 import "./transformation.css";
 import "./icons.css";
 import "./community-map.css";

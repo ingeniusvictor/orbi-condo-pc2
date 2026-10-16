@@ -1,0 +1,66 @@
+/* Home-only information architecture. The public portal is visually ordered by resident priority without changing private routes or module internals. */
+body>main:has(>.hero){display:flex;flex-direction:column}
+body>main:has(>.hero)>*{order:50}
+body>main:has(>.hero)>.hero{order:0}
+body>main:has(>.hero)>.identity{order:1}
+body>main:has(>.hero)>.commandDeck{order:2}
+body>main:has(>.hero)>#equipo-operativo{order:3}
+body>main:has(>.hero)>.pulse{order:4}
+body>main:has(>.hero)>#maintenance{order:5}
+body>main:has(>.hero)>.systems{order:6}
+body>main:has(>.hero)>.calendar{order:7}
+body>main:has(>.hero)>.providers{order:8}
+body>main:has(>.hero)>.alertCenter{order:9}
+body>main:has(>.hero)>.security{order:10}
+body>main:has(>.hero)>#orbi-finance{order:11}
+body>main:has(>.hero)>#finance-comparison{order:12}
+body>main:has(>.hero)>#biblioteca-tecnica{order:13}
+body>main:has(>.hero)>.communityVoice{order:14}
+body>main:has(>.hero)>.communityMap{order:15}
+body>main:has(>.hero)>.governance{order:16}
+body>main:has(>.hero)>#apartments{order:17}
+body>main:has(>.hero)>section[aria-labelledby="huella-title"]{order:18}
+body>main:has(>.hero)>.pocket{order:19}
+body>main:has(>.hero)>#orbi-evidence{order:20}
+body>main:has(>.hero)>section[aria-labelledby="evidence-flow-title"]{order:21}
+body>main:has(>.hero)>#orbi-pay{order:22}
+body>main:has(>.hero)>#pay-admin{order:23}
+body>main:has(>.hero)>#finance-editor{order:24}
+body>main:has(>.hero)>section[aria-label="Revisión de importaciones financieras"]{order:25}
+body>main:has(>.hero)>.transformation{order:26}
+body>main:has(>.hero)>.future{order:27}
+body>main:has(>.hero)>footer{order:28}
+
+body>main:has(>.hero)>#equipo-operativo,
+body>main:has(>.hero)>#maintenance,
+body>main:has(>.hero)>.calendar,
+body>main:has(>.hero)>.providers,
+body>main:has(>.hero)>.security,
+body>main:has(>.hero)>#orbi-finance,
+body>main:has(>.hero)>#biblioteca-tecnica,
+body>main:has(>.hero)>.communityVoice,
+body>main:has(>.hero)>#apartments,
+body>main:has(>.hero)>#orbi-evidence,
+body>main:has(>.hero)>#orbi-pay,
+body>main:has(>.hero)>.future{scroll-margin-top:24px}
+
+/* Secondary/lab surfaces are intentionally pushed after resident-priority content. */
+body>main:has(>.hero)>#finance-editor,
+body>main:has(>.hero)>section[aria-label="Revisión de importaciones financieras"],
+body>main:has(>.hero)>#pay-admin,
+body>main:has(>.hero)>section[aria-labelledby="evidence-flow-title"]{position:relative}
+
+@media(max-width:700px){
+ body>main:has(>.hero)>#equipo-operativo,
+ body>main:has(>.hero)>#maintenance,
+ body>main:has(>.hero)>.calendar,
+ body>main:has(>.hero)>.providers,
+ body>main:has(>.hero)>.security,
+ body>main:has(>.hero)>#orbi-finance,
+ body>main:has(>.hero)>#biblioteca-tecnica,
+ body>main:has(>.hero)>.communityVoice,
+ body>main:has(>.hero)>#apartments,
+ body>main:has(>.hero)>#orbi-evidence,
+ body>main:has(>.hero)>#orbi-pay,
+ body>main:has(>.hero)>.future{scroll-margin-top:12px}
+}
