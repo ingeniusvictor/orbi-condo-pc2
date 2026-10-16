@@ -1,0 +1,40 @@
+{
+  "schemaVersion": 1,
+  "kind": "staging_region_inventory",
+  "recordedAt": "2026-10-16",
+  "scope": "administrator_only_synthetic_staging",
+  "supabase": {
+    "projectRef": "drqjpzydgihrrdnkhewh",
+    "projectName": "orbi-living-pc2-staging",
+    "status": "ACTIVE_HEALTHY",
+    "primaryRegion": "sa-east-1",
+    "productionProjectCreated": false
+  },
+  "vercel": {
+    "teamSlug": "orbi4",
+    "teamPlanObserved": "hobby",
+    "projectId": "prj_M8Su8hDIEyLgHWMyagPpQDJ6JoLQ",
+    "projectName": "orbi-condo-pc2",
+    "projectLiveObserved": false,
+    "nodeVersionObserved": "24.x",
+    "previewDeploymentId": "dpl_HeaspQgx77U8ZYCtuoBsQEMRye31",
+    "previewDeploymentRegionObserved": "iad1"
+  },
+  "analysis": {
+    "currentDynamicComputeAndDatabaseColocated": false,
+    "recommendedSupabaseProductionRegionCandidate": "sa-east-1",
+    "recommendedVercelFunctionRegionCandidate": "gru1",
+    "vercelCandidateMustBeRevalidatedBeforeConfiguration": true,
+    "legalOrContractualApprovalForBrazilRecorded": false,
+    "chileSupabaseRegionObservedInCurrentDocs": false
+  },
+  "mutations": {
+    "supabaseProductionCreated": false,
+    "supabaseRegionChanged": false,
+    "vercelRegionChanged": false,
+    "vercelProductionDeployed": false,
+    "realDataLoaded": false,
+    "p1eReopened": false
+  },
+  "claim": "Technical staging inventory and future region candidate only; not legal approval, Production configuration, or a promise that data is hosted in Chile."
+}
