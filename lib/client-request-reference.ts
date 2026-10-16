@@ -15,7 +15,8 @@ export function shouldExposeFailureReference(pathname:string,status:number){
 export function privateApiPath(input:RequestInfo|URL){
  try{
   const raw=typeof input==="string"?input:input instanceof URL?input.href:input.url;
-  return new URL(raw,window.location.origin).pathname;
+  const parsed=new URL(raw,window.location.origin);
+  return parsed.origin===window.location.origin?parsed.pathname:"";
  }catch{return "";}
 }
 
