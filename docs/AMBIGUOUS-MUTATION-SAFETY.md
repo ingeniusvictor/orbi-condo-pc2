@@ -16,18 +16,30 @@ The Administrator workspace therefore distinguishes between a confirmed applicat
 | shift gap report | `expectedRevision` plus conditional PATCH and `409` | bounded: the same stale revision cannot apply twice |
 | shift handoff | `expectedRevision` plus conditional PATCH and `409` | bounded: the same stale revision cannot apply twice |
 | incident command | `expectedRevision` plus conditional PATCH and `409` | bounded: the same stale revision cannot apply twice |
-| incident report/create | new INSERT without a durable idempotency key | **open**: a lost response after INSERT can leave an ambiguous result |
+| incident report/create | opaque UUID request key plus database uniqueness by community + creator + key | bounded after the staging migration: one logical request can create at most one incident |
 
 This table describes the currently exposed Administrator workspace path. Other creation-style endpoints must be reviewed before being activated in that workspace.
 
-## Immediate guard
+## Immediate ambiguity guard
 
 For same-origin `POST /api/operations/*` calls, a network failure or `5xx` is treated conservatively as an ambiguous result. The UI tells the Administrator not to repeat the action and keeps the warning visible until a successful fresh read of `/api/operations/dashboard` verifies current state.
 
 The guard does not read response bodies, does not persist payloads, does not add telemetry and does not claim that a failed response means the database write succeeded.
 
-## Durable idempotency remains future work
+## Durable incident-create idempotency
 
-The UI warning is **not** a substitute for durable idempotency. Before real-data Production activation, create-style mutations that can be retried must be reviewed for a server-validated opaque idempotency key, payload-equivalence checks and a database-enforced uniqueness/replay strategy. That design requires a separately reviewed schema/API change and is not implemented by this document.
+Incident creation uses a route-local, client-generated UUID carried in the private `x-orbi-idempotency-key` request header. The browser bridge overwrites the header itself, keeps the pending key only in memory and never writes it to local storage, session storage or cookies. The key is an opaque technical identifier; it is not resident or staff data.
 
-No Production configuration, Supabase migration, P1E restore work, new roles or real condominium data are introduced here.
+The database stores the key in nullable `incidents.client_request_id` and enforces uniqueness on `(community_id, created_by, client_request_id)` whenever the key is present. Historical synthetic rows can remain `NULL`, so the migration is additive and backward-compatible.
+
+The first accepted request returns the newly created incident. If the same logical request is repeated with the same key, the unique constraint prevents a second row; the API resolves the existing incident for the same community and creator and returns it as a replay. The idempotency key is not part of the dashboard projection or API incident response.
+
+The browser may make at most one automatic retry for incident creation after a network failure or `5xx`, and that retry uses the same key. There is no retry loop. If the retry is still unresolved, the existing **Resultado no confirmado** guard remains active and requires a fresh dashboard verification before manual repetition.
+
+A replay never updates the existing incident. Reusing an already-consumed key therefore cannot mutate the row that won the first insert. This mechanism provides at-most-once incident creation for a given community, authenticated creator and opaque request key.
+
+## Boundaries
+
+This change does not make other create-style routes idempotent automatically. Each such route must receive its own reviewed server/database contract before activation in the Administrator workspace.
+
+No Production configuration, Production Supabase project, P1E restore work, new roles or real condominium data are introduced here. The migration is intended only for synthetic staging validation before any future Production decision.
