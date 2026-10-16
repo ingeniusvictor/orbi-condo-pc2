@@ -20,7 +20,7 @@ const roles=[
     title:"Mayordomía",
     icon:"◇",
     summary:"Coordina la operación cotidiana de Parque Ciudadano II y apoya la continuidad del servicio entre equipos, turnos y requerimientos.",
-    duties:["Coordinación operativa","Seguimiento de continuidad","Apoyo a coberturas"],
+    duties:["Coordinación operativa","Seguimiento de continuidad","Lun–Vie · 09:00–18:00"],
   },
   {
     count:1,
@@ -95,6 +95,11 @@ export default function CommunityOperationsOverview(){
             <div className={styles.specialIcon}>↻</div>
             <div className={styles.specialText}><small>DOMINGOS Y FERIADOS</small><strong>Cobertura especial en dos bloques</strong><p>La continuidad se organiza con un turno diurno de <b>08:00–20:00</b> y uno nocturno de <b>20:00–08:00</b>.</p></div>
             <div className={styles.specialTimes}><span><b>08:00</b> → 20:00</span><span><b>20:00</b> → 08:00</span></div>
+          </div>
+          <div className={styles.specialCoverage}>
+            <div className={styles.specialIcon}>◇</div>
+            <div className={styles.specialText}><small>JORNADA DE MAYORDOMÍA</small><strong>Horario distinto a la cobertura de conserjería</strong><p>Mayordomía trabaja de <b>lunes a viernes</b>, en jornada diurna de <b>09:00–18:00</b>.</p></div>
+            <div className={styles.specialTimes}><span><b>LUN–VIE</b></span><span><b>09:00</b> → 18:00</span></div>
           </div>
         </div>
       </div>
