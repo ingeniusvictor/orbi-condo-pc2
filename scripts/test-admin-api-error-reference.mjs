@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
-import {safeRequestReference,shouldExposeFailureReference} from "../lib/client-request-reference.ts";
+import {isAmbiguousMutationFailure,safeRequestReference,shouldExposeFailureReference} from "../lib/client-request-reference.ts";
 
 const valid="7B55BCA8-2B4E-4F59-974C-17C8E6753F53";
 assert.equal(safeRequestReference(valid),valid.toLowerCase());
@@ -15,10 +15,23 @@ for(const status of [400,401,403,404])assert.equal(shouldExposeFailureReference(
 assert.equal(shouldExposeFailureReference("/api/public/demo",500),false);
 assert.equal(shouldExposeFailureReference("https://attacker.example/api/operations/x",500),false);
 
+assert.equal(isAmbiguousMutationFailure("/api/operations/incidents/report","POST"),true);
+for(const status of [500,502,503])assert.equal(isAmbiguousMutationFailure("/api/operations/incidents/report","POST",status),true);
+for(const status of [200,201,400,409,422,429])assert.equal(isAmbiguousMutationFailure("/api/operations/incidents/report","POST",status),false);
+assert.equal(isAmbiguousMutationFailure("/api/operations/incidents/report","GET",500),false);
+assert.equal(isAmbiguousMutationFailure("/api/auth/login","POST",500),false);
+assert.equal(isAmbiguousMutationFailure("/api/public/demo","POST",500),false);
+
 const component=fs.readFileSync("app/operaciones/private-api-failure-reference.tsx","utf8");
 const layout=fs.readFileSync("app/operaciones/layout.tsx","utf8");
 assert.match(component,/response\.headers\.get\("x-orbi-request-id"\)/);
 assert.match(component,/Referencia técnica disponible/);
+assert.match(component,/Resultado no confirmado/);
+assert.match(component,/No repitas la acción todavía/);
+assert.match(component,/Actualiza la consola y verifica si el cambio ya quedó registrado/);
+assert.match(component,/pathname==="\/api\/operations\/dashboard"&&method==="GET"&&response\.ok/);
+assert.match(component,/isAmbiguousMutationFailure\(pathname,method,response\.status\)/);
+assert.match(component,/isAmbiguousMutationFailure\(pathname,method\)/);
 assert.match(component,/No copies contraseñas, datos personales ni contenido privado/);
 assert.match(component,/window\.fetch===wrappedFetch/);
 assert.match(layout,/PrivateApiFailureReference/);
@@ -27,4 +40,4 @@ for(const forbidden of ["response.json(","response.text(","response.clone(","con
  assert.equal(component.includes(forbidden),false,`forbidden client failure-reference behavior: ${forbidden}`);
 }
 
-console.log("PASS Administrator API failures expose only validated opaque request references");
+console.log("PASS Administrator API failures expose safe references and block blind retries after ambiguous mutations");
