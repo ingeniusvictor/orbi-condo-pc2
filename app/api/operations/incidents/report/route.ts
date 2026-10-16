@@ -31,7 +31,7 @@ export async function POST(req:Request){
  if(!isDate(body.serviceDate)||!isArea(body.area)||!isPriority(body.priority))return NextResponse.json({error:"Datos de incidencia inválidos"},{status:400});
  if(body.caseReference!==undefined&&(typeof body.caseReference!=="string"||body.caseReference.length>80||!/^[A-Za-z0-9._-]*$/.test(body.caseReference)))return NextResponse.json({error:"Referencia de caso inválida"},{status:400});
  const payload={community_id:identity.communityId,service_date:body.serviceDate,area:body.area,priority:body.priority,state:"reported",assigned_role:null,private_case_reference:body.caseReference||null,client_request_id:requestId,created_by:identity.id,updated_by:identity.id};
- const response=await operationsDbFetch(`incidents?select=${incidentSelect}`,identity,{method:"POST",headers:{"Content-Type":"application/json","Prefer":"return=representation"},body:JSON.stringify(payload)});
+ const response=await operationsDbFetch("incidents?select=id,community_id,service_date,area,priority,state,assigned_role,revision,created_at",identity,{method:"POST",headers:{"Content-Type":"application/json","Prefer":"return=representation"},body:JSON.stringify(payload)});
  if(!response.ok){
   if(response.status===409){
    const replay=await findIncidentReplay(identity,requestId);
