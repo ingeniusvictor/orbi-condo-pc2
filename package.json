@@ -19,7 +19,7 @@
     "test:admin-data-handling-procedures": "node scripts/test-admin-data-handling-procedures.mjs",
     "test:admin-validation-pack": "node scripts/test-admin-validation-pack.mjs",
     "test:admin-operations-questionnaire": "node scripts/test-admin-operations-questionnaire.mjs",
-    "test:private-observability": "node scripts/test-private-observability.mjs",
+    "test:private-observability": "node --experimental-strip-types scripts/test-private-observability.mjs",
     "test:build-clean": "git diff --exit-code -- tsconfig.json next-env.d.ts",
     "test:auth-login-upstream": "node scripts/test-auth-login-upstream-semantics.mjs",
     "test:auth-hermetic": "node scripts/test-auth-lifecycle-hermetic.mjs",
