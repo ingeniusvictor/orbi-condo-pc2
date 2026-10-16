@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "kind": "staging_release_recovery_rehearsal",
+  "recordedAt": "2026-10-16",
+  "scope": "administrator_only_synthetic_staging",
+  "vercel": {
+    "teamSlug": "orbi4",
+    "teamPlanObserved": "hobby",
+    "projectId": "prj_M8Su8hDIEyLgHWMyagPpQDJ6JoLQ",
+    "projectName": "orbi-condo-pc2",
+    "deploymentId": "dpl_6Fy9krb3DU4VrjHtUUjQ9zn7h4XR",
+    "deploymentUrl": "orbi-condo-pc2-1sq86ivtz-orbi4.vercel.app",
+    "deploymentState": "READY",
+    "deploymentEnvironment": "preview",
+    "gitBranch": "oc-pc2-86-private-observability",
+    "gitSha": "59b5f2f5482d46c63b6853527534d956da2e3320"
+  },
+  "healthEvidence": {
+    "path": "/api/auth/session",
+    "status": 200,
+    "configured": true,
+    "authenticated": false,
+    "privateNoStore": true,
+    "noindex": true,
+    "requestCorrelationHeaderPresent": true
+  },
+  "qualityEvidence": {
+    "workflowRunId": 38905237253,
+    "qualityGateNumber": 298,
+    "node22": "success",
+    "node24": "success"
+  },
+  "mutations": {
+    "productionRollbackExecuted": false,
+    "productionPromotionExecuted": false,
+    "productionAliasChanged": false,
+    "databaseChanged": false,
+    "p1eReopened": false
+  },
+  "claim": "Read-only Preview recovery rehearsal only; not a Production rollback approval or database restore proof."
+}
