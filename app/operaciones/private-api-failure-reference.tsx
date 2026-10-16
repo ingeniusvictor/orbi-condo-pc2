@@ -1,39 +1,80 @@
 "use client";
 
-import {useEffect,useState} from "react";
+import {useEffect,useRef,useState} from "react";
 import {isAmbiguousMutationFailure,privateApiMethod,privateApiPath,safeRequestReference,shouldExposeFailureReference} from "../../lib/client-request-reference";
+
+type PendingIncidentRequest={body:string;key:string};
 
 export default function PrivateApiFailureReference(){
  const [reference,setReference]=useState<string|null>(null);
  const [ambiguous,setAmbiguous]=useState(false);
+ const pendingIncident=useRef<PendingIncidentRequest|null>(null);
 
  useEffect(()=>{
   const previousFetch=window.fetch;
   const wrappedFetch:typeof window.fetch=async(...args)=>{
    const pathname=privateApiPath(args[0]);
    const method=privateApiMethod(args[0],args[1]);
-   try{
-    const response=await previousFetch(...args);
-    if(pathname==="/api/operations/dashboard"&&method==="GET"&&response.ok){
-     setAmbiguous(false);
-     setReference(null);
-    }
-    if(isAmbiguousMutationFailure(pathname,method,response.status)){
-     setReference(null);
-     setAmbiguous(true);
-    }
-    if(shouldExposeFailureReference(pathname,response.status)){
-     const next=safeRequestReference(response.headers.get("x-orbi-request-id"));
-     if(next)setReference(next);
-    }
-    return response;
-   }catch(error){
-    if(isAmbiguousMutationFailure(pathname,method)){
-     setReference(null);
-     setAmbiguous(true);
-    }
-    throw error;
+   const incidentBody=pathname==="/api/operations/incidents/report"&&method==="POST"&&typeof args[1]?.body==="string"?args[1].body:null;
+   let requestArgs=args;
+   let incidentCreate=false;
+
+   if(incidentBody!==null){
+    incidentCreate=true;
+    const current=pendingIncident.current;
+    const key=current?.body===incidentBody?current.key:crypto.randomUUID();
+    pendingIncident.current={body:incidentBody,key};
+    const headers=new Headers(args[1]?.headers);
+    headers.set("x-orbi-idempotency-key",key);
+    requestArgs=[args[0],{...args[1],headers}] as Parameters<typeof window.fetch>;
    }
+
+   const run=()=>previousFetch(...requestArgs);
+   let response:Response;
+   let retried=false;
+   try{
+    response=await run();
+   }catch(firstError){
+    if(!incidentCreate){
+     if(isAmbiguousMutationFailure(pathname,method)){
+      setReference(null);
+      setAmbiguous(true);
+     }
+     throw firstError;
+    }
+    retried=true;
+    try{response=await run();}
+    catch(secondError){
+     setReference(null);
+     setAmbiguous(true);
+     throw secondError;
+    }
+   }
+
+   if(incidentCreate&&!retried&&response.status>=500){
+    retried=true;
+    try{response=await run();}
+    catch(secondError){
+     setReference(null);
+     setAmbiguous(true);
+     throw secondError;
+    }
+   }
+
+   if(incidentCreate&&response.status<500)pendingIncident.current=null;
+   if(pathname==="/api/operations/dashboard"&&method==="GET"&&response.ok){
+    setAmbiguous(false);
+    setReference(null);
+   }
+   if(isAmbiguousMutationFailure(pathname,method,response.status)){
+    setReference(null);
+    setAmbiguous(true);
+   }
+   if(shouldExposeFailureReference(pathname,response.status)){
+    const next=safeRequestReference(response.headers.get("x-orbi-request-id"));
+    if(next)setReference(next);
+   }
+   return response;
   };
   window.fetch=wrappedFetch;
   return ()=>{if(window.fetch===wrappedFetch)window.fetch=previousFetch;};
