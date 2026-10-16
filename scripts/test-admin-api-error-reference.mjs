@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
-import {isAmbiguousMutationFailure,safeRequestReference,shouldExposeFailureReference} from "../lib/client-request-reference.ts";
+import {isAmbiguousMutationFailure,privateApiMethod,privateApiPath,safeRequestReference,shouldExposeFailureReference} from "../lib/client-request-reference.ts";
 
 const valid="7B55BCA8-2B4E-4F59-974C-17C8E6753F53";
 assert.equal(safeRequestReference(valid),valid.toLowerCase());
@@ -14,6 +14,15 @@ assert.equal(shouldExposeFailureReference("/api/auth/session",500),true);
 for(const status of [400,401,403,404])assert.equal(shouldExposeFailureReference("/api/auth/login",status),false);
 assert.equal(shouldExposeFailureReference("/api/public/demo",500),false);
 assert.equal(shouldExposeFailureReference("https://attacker.example/api/operations/x",500),false);
+
+const oldWindow=globalThis.window;
+globalThis.window={location:{origin:"https://orbi.test"}};
+assert.equal(privateApiPath("/api/operations/incidents/report"),"/api/operations/incidents/report");
+assert.equal(privateApiPath("https://orbi.test/api/operations/incidents/report?x=1"),"/api/operations/incidents/report");
+assert.equal(privateApiPath("https://attacker.example/api/operations/incidents/report"),"");
+globalThis.window=oldWindow;
+assert.equal(privateApiMethod("/api/operations/x",{method:"post"}),"POST");
+assert.equal(privateApiMethod("/api/operations/x"),"GET");
 
 assert.equal(isAmbiguousMutationFailure("/api/operations/incidents/report","POST"),true);
 for(const status of [500,502,503])assert.equal(isAmbiguousMutationFailure("/api/operations/incidents/report","POST",status),true);
@@ -29,9 +38,11 @@ assert.match(component,/Referencia técnica disponible/);
 assert.match(component,/Resultado no confirmado/);
 assert.match(component,/No repitas la acción todavía/);
 assert.match(component,/Actualiza la consola y verifica si el cambio ya quedó registrado/);
+assert.match(component,/El aviso desaparecerá cuando la consola confirme una lectura nueva/);
 assert.match(component,/pathname==="\/api\/operations\/dashboard"&&method==="GET"&&response\.ok/);
 assert.match(component,/isAmbiguousMutationFailure\(pathname,method,response\.status\)/);
 assert.match(component,/isAmbiguousMutationFailure\(pathname,method\)/);
+assert.match(component,/!ambiguous&&<button/);
 assert.match(component,/No copies contraseñas, datos personales ni contenido privado/);
 assert.match(component,/window\.fetch===wrappedFetch/);
 assert.match(layout,/PrivateApiFailureReference/);
