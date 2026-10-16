@@ -18,3 +18,13 @@ export function privateApiPath(input:RequestInfo|URL){
   return new URL(raw,window.location.origin).pathname;
  }catch{return "";}
 }
+
+export function privateApiMethod(input:RequestInfo|URL,init?:RequestInit){
+ const method=init?.method??(typeof Request!=="undefined"&&input instanceof Request?input.method:"GET");
+ return method.toUpperCase();
+}
+
+export function isAmbiguousMutationFailure(pathname:string,method:string,status?:number){
+ if(!pathname.startsWith("/api/operations/")||method.toUpperCase()!=="POST")return false;
+ return status===undefined||status>=500;
+}
