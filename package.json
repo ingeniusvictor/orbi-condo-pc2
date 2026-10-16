@@ -19,6 +19,7 @@
     "test:admin-data-handling-procedures": "node scripts/test-admin-data-handling-procedures.mjs",
     "test:admin-validation-pack": "node scripts/test-admin-validation-pack.mjs",
     "test:admin-operations-questionnaire": "node scripts/test-admin-operations-questionnaire.mjs",
+    "test:private-observability": "node --experimental-strip-types scripts/test-private-observability.mjs",
     "test:build-clean": "git diff --exit-code -- tsconfig.json next-env.d.ts",
     "test:auth-login-upstream": "node scripts/test-auth-login-upstream-semantics.mjs",
     "test:auth-hermetic": "node scripts/test-auth-lifecycle-hermetic.mjs",
@@ -26,7 +27,7 @@
     "test:operations-role-http-hermetic": "node scripts/test-operations-role-http-hermetic.mjs",
     "test:dashboard-privacy-hermetic": "node scripts/test-dashboard-privacy-hermetic.mjs",
     "test:anonymous-security": "node scripts/test-anonymous-security-smoke.mjs",
-    "check": "npm run typecheck && npm run test:private-boundaries && npm run test:continuity && npm run test:operations-domain && npm run test:qa-runner-safety && npm run test:staging-e2e-workflow && npm run test:staging-role-auth-provisioner && npm run test:admin-ui-qa-safety && npm run test:main-ruleset-helper && npm run test:private-data-governance && npm run test:admin-data-handling-procedures && npm run test:admin-validation-pack && npm run test:admin-operations-questionnaire && npm run build && npm run test:build-clean && npm run test:auth-login-upstream && npm run test:auth-hermetic && npm run test:operations-conflict-hermetic && npm run test:operations-role-http-hermetic && npm run test:dashboard-privacy-hermetic && npm run test:anonymous-security",
+    "check": "npm run typecheck && npm run test:private-boundaries && npm run test:continuity && npm run test:operations-domain && npm run test:qa-runner-safety && npm run test:staging-e2e-workflow && npm run test:staging-role-auth-provisioner && npm run test:admin-ui-qa-safety && npm run test:main-ruleset-helper && npm run test:private-data-governance && npm run test:admin-data-handling-procedures && npm run test:admin-validation-pack && npm run test:admin-operations-questionnaire && npm run test:private-observability && npm run build && npm run test:build-clean && npm run test:auth-login-upstream && npm run test:auth-hermetic && npm run test:operations-conflict-hermetic && npm run test:operations-role-http-hermetic && npm run test:dashboard-privacy-hermetic && npm run test:anonymous-security",
     "qa:operations": "node scripts/qa-private-operations.mjs"
   },
   "dependencies": {
