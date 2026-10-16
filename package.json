@@ -8,6 +8,7 @@
     "start": "next start",
     "typecheck": "tsc --noEmit",
     "test:next-security-floor": "node scripts/test-next-security-floor.mjs",
+    "test:direct-dependency-pins": "node scripts/test-direct-dependency-pins.mjs",
     "test:private-boundaries": "node scripts/test-private-boundaries.mjs",
     "test:continuity": "node --experimental-strip-types scripts/test-continuity-model.mjs",
     "test:operations-domain": "node --experimental-strip-types scripts/test-operations-domain.mjs",
@@ -41,19 +42,23 @@
     "test:operations-role-http-hermetic": "node scripts/test-operations-role-http-hermetic.mjs",
     "test:dashboard-privacy-hermetic": "node scripts/test-dashboard-privacy-hermetic.mjs",
     "test:anonymous-security": "node scripts/test-anonymous-security-smoke.mjs",
-    "check": "npm run test:next-security-floor && npm run typecheck && npm run test:private-boundaries && npm run test:continuity && npm run test:operations-domain && npm run test:qa-runner-safety && npm run test:staging-e2e-workflow && npm run test:staging-role-auth-provisioner && npm run test:admin-ui-qa-safety && npm run test:main-ruleset-helper && npm run test:private-data-governance && npm run test:admin-data-handling-procedures && npm run test:admin-validation-pack && npm run test:admin-operations-questionnaire && npm run test:private-observability && npm run test:release-recovery && npm run test:region-residency && npm run test:admin-error-boundary && npm run test:admin-api-error-reference && npm run test:auth-cookie-scope && npm run test:origin-guard-static && npm run test:private-route-authorization && npm run test:private-request-envelope && npm run test:structural-csp && npm run build && npm run test:build-clean && npm run test:auth-login-upstream && npm run test:auth-refresh-upstream && npm run test:auth-hermetic && npm run test:origin-guard-hermetic && npm run test:private-request-envelope-hermetic && npm run test:operations-conflict-hermetic && npm run test:incident-idempotency && npm run test:operations-role-http-hermetic && npm run test:dashboard-privacy-hermetic && npm run test:anonymous-security",
+    "check": "npm run test:next-security-floor && npm run test:direct-dependency-pins && npm run typecheck && npm run test:private-boundaries && npm run test:continuity && npm run test:operations-domain && npm run test:qa-runner-safety && npm run test:staging-e2e-workflow && npm run test:staging-role-auth-provisioner && npm run test:admin-ui-qa-safety && npm run test:main-ruleset-helper && npm run test:private-data-governance && npm run test:admin-data-handling-procedures && npm run test:admin-validation-pack && npm run test:admin-operations-questionnaire && npm run test:private-observability && npm run test:release-recovery && npm run test:region-residency && npm run test:admin-error-boundary && npm run test:admin-api-error-reference && npm run test:auth-cookie-scope && npm run test:origin-guard-static && npm run test:private-route-authorization && npm run test:private-request-envelope && npm run test:structural-csp && npm run build && npm run test:build-clean && npm run test:auth-login-upstream && npm run test:auth-refresh-upstream && npm run test:auth-hermetic && npm run test:origin-guard-hermetic && npm run test:private-request-envelope-hermetic && npm run test:operations-conflict-hermetic && npm run test:incident-idempotency && npm run test:operations-role-http-hermetic && npm run test:dashboard-privacy-hermetic && npm run test:anonymous-security",
     "qa:operations": "node scripts/qa-private-operations.mjs"
   },
   "dependencies": {
-    "framer-motion": "^12.23.24",
+    "framer-motion": "12.23.25",
     "next": "16.4.1",
     "react": "19.2.8",
     "react-dom": "19.2.8"
   },
   "devDependencies": {
-    "@types/node": "^24.10.0",
-    "@types/react": "^19.2.2",
-    "@types/react-dom": "^19.2.2",
-    "typescript": "^5.9.3"
+    "@types/node": "24.10.0",
+    "@types/react": "19.2.2",
+    "@types/react-dom": "19.2.2",
+    "typescript": "5.9.3"
+  },
+  "overrides": {
+    "motion-dom": "12.40.0",
+    "motion-utils": "12.39.0"
   }
 }
