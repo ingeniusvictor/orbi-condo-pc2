@@ -24,6 +24,12 @@ export type Certification={
  state:string;
 };
 
+export type ReceptionTypology={
+ code:string;
+ units:number;
+ areaM2:number;
+};
+
 export type Community={
  slug:string;
  name:string;
@@ -33,6 +39,20 @@ export type Community={
  housingCount:number;
  housingProgram:string;
  publicProjectCode:string;
+ receptionRecord:{
+  certificateNumber:string;
+  certificateDate:string;
+  approvalDate:string;
+  legalReference:string;
+  sourceLabel:string;
+ };
+ propertyInventory:{
+  apartments:number;
+  commercialUnits:number;
+  storageUnits:number;
+  parkingSpaces:number;
+ };
+ receptionTypologies:ReceptionTypology[];
  systems:MaintenanceSystem[];
  providers:Provider[];
  certifications:Certification[];

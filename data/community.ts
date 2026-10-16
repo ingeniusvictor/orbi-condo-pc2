@@ -9,6 +9,28 @@ export const community={
  housingCount:278,
  housingProgram:"DS19",
  publicProjectCode:"153778",
+ receptionRecord:{
+  certificateNumber:"112",
+  certificateDate:"2023-11-17",
+  approvalDate:"2024-06-11",
+  legalReference:"José M. Ayala",
+  sourceLabel:"Antecedente de recepción informado para Parque Ciudadano II",
+ },
+ propertyInventory:{
+  apartments:278,
+  commercialUnits:1,
+  storageUnits:48,
+  parkingSpaces:110,
+ },
+ receptionTypologies:[
+  {code:"C1",units:64,areaM2:61.95},
+  {code:"C2",units:39,areaM2:57.51},
+  {code:"C3",units:64,areaM2:57.02},
+  {code:"C4",units:46,areaM2:54.9},
+  {code:"C5",units:9,areaM2:55.78},
+  {code:"C6",units:55,areaM2:55.78},
+  {code:"C8",units:1,areaM2:60.63},
+ ],
  systems:[
   {name:"Ascensores",frequency:"Mensual",provider:"Atlagich Ascensores",status:"scheduled",note:"Mantención preventiva residencial"},
   {name:"Sala de Bombas",frequency:"Bimensual",provider:"Servicios Hidropotable",status:"scheduled",note:"Presurización y sistemas de bombeo"},

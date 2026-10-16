@@ -15,6 +15,7 @@ const primaryHomeItems:HomeItem[]=[
 ];
 
 const secondaryHomeItems:HomeItem[]=[
+ {label:"Patrimonio",target:"#patrimonio-condominio"},
  {label:"Calendario",target:".calendar"},
  {label:"Proveedores",target:".providers"},
  {label:"Viviendas",target:"#apartments"},
