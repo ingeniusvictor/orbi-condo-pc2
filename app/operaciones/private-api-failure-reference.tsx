@@ -1,7 +1,7 @@
 "use client";
 
 import {useEffect,useState} from "react";
-import {privateApiPath,safeRequestReference,shouldExposeFailureReference} from "@/lib/client-request-reference";
+import {privateApiPath,safeRequestReference,shouldExposeFailureReference} from "../../lib/client-request-reference";
 
 export default function PrivateApiFailureReference(){
  const [reference,setReference]=useState<string|null>(null);
