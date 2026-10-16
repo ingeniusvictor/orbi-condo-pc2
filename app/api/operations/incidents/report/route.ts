@@ -24,15 +24,17 @@ export async function POST(req:Request){
  if(!trustedOrigin(req))return NextResponse.json({error:"Origen no autorizado"},{status:403});
  const identity=await requireOperationPermission("report_incident");
  if(!identity)return NextResponse.json({error:"No autorizado"},{status:403});
- let body:{serviceDate?:unknown;area?:unknown;priority?:unknown;caseReference?:unknown;clientRequestId?:unknown};
+ const requestId=req.headers.get("x-orbi-idempotency-key");
+ if(!isRequestId(requestId))return NextResponse.json({error:"Clave de operación inválida"},{status:400});
+ let body:{serviceDate?:unknown;area?:unknown;priority?:unknown;caseReference?:unknown};
  try{body=await req.json()}catch{return NextResponse.json({error:"Solicitud inválida"},{status:400})}
- if(!isDate(body.serviceDate)||!isArea(body.area)||!isPriority(body.priority)||!isRequestId(body.clientRequestId))return NextResponse.json({error:"Datos de incidencia inválidos"},{status:400});
+ if(!isDate(body.serviceDate)||!isArea(body.area)||!isPriority(body.priority))return NextResponse.json({error:"Datos de incidencia inválidos"},{status:400});
  if(body.caseReference!==undefined&&(typeof body.caseReference!=="string"||body.caseReference.length>80||!/^[A-Za-z0-9._-]*$/.test(body.caseReference)))return NextResponse.json({error:"Referencia de caso inválida"},{status:400});
- const payload={community_id:identity.communityId,service_date:body.serviceDate,area:body.area,priority:body.priority,state:"reported",assigned_role:null,private_case_reference:body.caseReference||null,client_request_id:body.clientRequestId,created_by:identity.id,updated_by:identity.id};
+ const payload={community_id:identity.communityId,service_date:body.serviceDate,area:body.area,priority:body.priority,state:"reported",assigned_role:null,private_case_reference:body.caseReference||null,client_request_id:requestId,created_by:identity.id,updated_by:identity.id};
  const response=await operationsDbFetch(`incidents?select=${incidentSelect}`,identity,{method:"POST",headers:{"Content-Type":"application/json","Prefer":"return=representation"},body:JSON.stringify(payload)});
  if(!response.ok){
   if(response.status===409){
-   const replay=await findIncidentReplay(identity,body.clientRequestId);
+   const replay=await findIncidentReplay(identity,requestId);
    if(!replay.ok)return NextResponse.json({error:"No se pudo verificar la operación repetida"},{status:502});
    if(replay.row)return NextResponse.json({ok:true,incident:replay.row,replayed:true},{status:200,headers:{"Cache-Control":"no-store"}});
    return NextResponse.json({error:"Conflicto de idempotencia; actualiza y verifica antes de continuar"},{status:409});
