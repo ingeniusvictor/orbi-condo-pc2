@@ -5,6 +5,8 @@ import BeforeAfter from "../components/BeforeAfter";
 import MaintenanceAlerts from "../components/MaintenanceAlerts";
 import CondoGovernance from "../components/CondoGovernance";
 import CommunityVoice from "../components/CommunityVoice";
+import CommunityOperationsOverview from "../components/CommunityOperationsOverview";
+import CommunityInstitutionalProfile from "../components/CommunityInstitutionalProfile";
 import OrbiPay from "../components/OrbiPay";
 import PayAdminPreview from "../components/PayAdminPreview";
 import OrbiEvidence from "../components/OrbiEvidence";
@@ -51,6 +53,9 @@ export default function Home(){
  <section className="hero"><div className="heroPhoto" aria-hidden="true"/><div className="heroShade" aria-hidden="true"/><div className="orb orb1"/><div className="orb orb2"/><nav><div className="brand"><span className="mark">O</span><span>ORBI <b>LIVING</b></span></div><span className="pilot">EXPERIENCIA PC2 · 2026</span></nav><motion.div className="heroCopy" initial={{opacity:0,y:28}} animate={{opacity:1,y:0}} transition={{duration:.8}}><p className="eyebrow">{community.name.toUpperCase()} · {community.city.toUpperCase()}</p><h1>Tu condominio,<br/><em>más claro.</em></h1><p className="lead">Descubre qué se mantiene, quién lo cuida y qué viene después. Toda la información esencial de tu comunidad, transformada en una experiencia que cualquiera puede entender.</p><div className="actions"><a href="#maintenance" className="primary">Explorar mantenciones <span>↓</span></a><span className="live"><i/> Información comunitaria</span></div></motion.div><div className="heroStats"><div><b>{String(community.systems.length).padStart(2,"0")}</b><span>Sistemas</span></div><div><b>{String(community.providers.length).padStart(2,"0")}</b><span>Proveedores</span></div><div><b>{String(community.certifications.length).padStart(2,"0")}</b><span>Certificaciones</span></div><div><b>12</b><span>Meses</span></div></div></section>
  
  <section className="identity"><div className="identityPhoto" role="img" aria-label={`Acceso de ${community.name}`}/><div className="identityCopy"><p className="eyebrow">UN LUGAR REAL · UNA EXPERIENCIA NUEVA</p><h2>{community.name},<br/><em>ahora también digital.</em></h2><p>Un condominio de {community.housingCount} viviendas en {community.city}, transformado en el primer concepto ORBI LIVING: información cotidiana presentada con claridad, identidad y diseño.</p><div className="identityFacts"><span><b>{community.housingCount}</b> viviendas</span><span><b>{community.housingProgram}</b> integración social</span><span><b>{community.city}</b> {community.region}</span></div></div></section>
+
+ <CommunityInstitutionalProfile/>
+ <CommunityOperationsOverview/>
  
  <section className="commandDeck" aria-label="Resumen de la comunidad">
    <div className="commandHead"><div><p className="eyebrow">CENTRO DIGITAL PC2</p><h2>Tu comunidad,<br/><em>en contexto.</em></h2></div><p>Una lectura rápida del mantenimiento declarado, los responsables identificados y las referencias anuales del calendario original.</p></div>
