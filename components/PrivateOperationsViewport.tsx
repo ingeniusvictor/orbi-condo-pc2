@@ -9,7 +9,7 @@ const CONCIERGE_ROUTE_CLASS="orbi-concierge-route";
 export default function PrivateOperationsViewport(){
  const pathname=usePathname();
  useEffect(()=>{
-  const privateOperations=pathname==="/operaciones";
+  const privateOperations=pathname==="/operaciones"||pathname==="/operaciones/extendida";
   const conciergeDaily=pathname==="/conserjeria";
   document.body.classList.toggle(PRIVATE_ROUTE_CLASS,privateOperations);
   document.body.classList.toggle(CONCIERGE_ROUTE_CLASS,conciergeDaily);
