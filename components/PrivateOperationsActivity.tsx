@@ -58,7 +58,7 @@ export default function PrivateOperationsActivity(){
  const [role,setRole]=useState<string|null>(null);
 
  useEffect(()=>{
-  if(pathname!=="/operaciones"){setItems(null);setRole(null);return;}
+  if(pathname!=="/operaciones/extendida"){setItems(null);setRole(null);return;}
   let alive=true;
   const load=async()=>{
    try{
@@ -77,7 +77,7 @@ export default function PrivateOperationsActivity(){
   return ()=>{alive=false;window.clearInterval(timer);};
  },[pathname]);
 
- if(pathname!=="/operaciones"||items===null)return null;
+ if(pathname!=="/operaciones/extendida"||items===null)return null;
  return <section aria-label="Bitácora operativa reciente" style={{background:"#06131f",color:"#efffff",fontFamily:"system-ui,sans-serif",padding:"0 clamp(14px,3vw,42px) clamp(34px,5vw,64px)"}}>
   <div style={{maxWidth:1260,margin:"0 auto",border:"1px solid #31576c",borderRadius:20,padding:"clamp(16px,3vw,22px)",background:"linear-gradient(160deg,rgba(15,43,60,.96),rgba(7,25,38,.96))",boxShadow:"0 20px 50px rgba(0,0,0,.18)"}}>
    <div style={{display:"flex",justifyContent:"space-between",alignItems:"end",gap:12,flexWrap:"wrap"}}>
