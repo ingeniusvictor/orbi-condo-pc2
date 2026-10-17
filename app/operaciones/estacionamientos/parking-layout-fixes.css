@@ -32,9 +32,7 @@
   line-height: 1;
 }
 
-/* Separate the 126–102 column from the central island, and make the 91–101 column
-   start below it instead of occupying the same vertical band. These selectors target
-   the CSS-module generated class names without changing the parking data or sequence. */
+/* Separate the 126–102 column from the central island. */
 [aria-label="Mapas interactivos de estacionamientos"] [class*="subEast"] {
   left: 56% !important;
   top: 24% !important;
@@ -42,7 +40,29 @@
   height: 42% !important;
 }
 
-[aria-label="Mapas interactivos de estacionamientos"] [class*="subSouth"] {
+/* IMPORTANT: subSouthWest contains 85–90 and must stay a HORIZONTAL row.
+   The previous broad [class*="subSouth"] selector also matched subSouthWest,
+   which accidentally converted/repositioned 85–90 as if they belonged to the
+   vertical 91–101 column. Keep both geometries explicitly separated. */
+[aria-label="Mapas interactivos de estacionamientos"] [class*="subSouthWest"] {
+  left: 30% !important;
+  top: 65% !important;
+  bottom: auto !important;
+  width: 23% !important;
+  height: 6% !important;
+  grid-auto-flow: column !important;
+  grid-auto-columns: minmax(0, 1fr) !important;
+  grid-auto-rows: 1fr !important;
+}
+
+[aria-label="Mapas interactivos de estacionamientos"] [class*="subSouthWest"] > button[title] {
+  min-width: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* 91–101 is the VERTICAL lower-center column. Exclude subSouthWest explicitly. */
+[aria-label="Mapas interactivos de estacionamientos"] [class*="subSouth"]:not([class*="subSouthWest"]) {
   left: 50% !important;
   top: 69% !important;
   bottom: auto !important;
