@@ -178,15 +178,15 @@ on conflict do nothing;
 -- manufacture user actors or synthetic audit noise.
 drop trigger if exists property_assets_revision on public.property_assets;
 create trigger property_assets_revision before update on public.property_assets
- for each row execute function public.bump_operational_revision();
+ for each row execute function private.bump_operational_revision();
 drop trigger if exists property_parties_private_revision on public.property_parties_private;
 create trigger property_parties_private_revision before update on public.property_parties_private
- for each row execute function public.bump_operational_revision();
+ for each row execute function private.bump_operational_revision();
 drop trigger if exists property_asset_occupancy_revision on public.property_asset_occupancy;
 create trigger property_asset_occupancy_revision before update on public.property_asset_occupancy
- for each row execute function public.bump_operational_revision();
+ for each row execute function private.bump_operational_revision();
 
-create or replace function public.audit_property_asset()
+create or replace function private.audit_property_asset()
 returns trigger
 language plpgsql
 security definer
@@ -203,7 +203,7 @@ begin
 end;
 $$;
 
-create or replace function public.audit_property_occupancy()
+create or replace function private.audit_property_occupancy()
 returns trigger
 language plpgsql
 security definer
@@ -222,15 +222,15 @@ begin
 end;
 $$;
 
-revoke all on function public.audit_property_asset() from public;
-revoke all on function public.audit_property_occupancy() from public;
+revoke all on function private.audit_property_asset() from public;
+revoke all on function private.audit_property_occupancy() from public;
 
 drop trigger if exists property_assets_audit on public.property_assets;
 create trigger property_assets_audit after update on public.property_assets
- for each row execute function public.audit_property_asset();
+ for each row execute function private.audit_property_asset();
 drop trigger if exists property_asset_occupancy_audit on public.property_asset_occupancy;
 create trigger property_asset_occupancy_audit after insert or update on public.property_asset_occupancy
- for each row execute function public.audit_property_occupancy();
+ for each row execute function private.audit_property_occupancy();
 
 alter table public.property_assets enable row level security;
 alter table public.property_parties_private enable row level security;
@@ -244,36 +244,36 @@ grant select,insert,update on public.property_asset_occupancy to authenticated;
 
 create policy property_assets_parking_lookup on public.property_assets
  for select to authenticated
- using(public.has_operations_role(community_id,array['administrator','mayordomo','concierge']));
+ using(private.has_operations_role(community_id,array['administrator','mayordomo','concierge']));
 create policy property_assets_admin_insert on public.property_assets
  for insert to authenticated
- with check(public.has_operations_role(community_id,array['administrator']) and created_by=auth.uid() and updated_by=auth.uid());
+ with check(private.has_operations_role(community_id,array['administrator']) and created_by=auth.uid() and updated_by=auth.uid());
 create policy property_assets_admin_update on public.property_assets
  for update to authenticated
- using(public.has_operations_role(community_id,array['administrator']))
- with check(public.has_operations_role(community_id,array['administrator']));
+ using(private.has_operations_role(community_id,array['administrator']))
+ with check(private.has_operations_role(community_id,array['administrator']));
 
 create policy property_parties_private_parking_lookup on public.property_parties_private
  for select to authenticated
- using(public.has_operations_role(community_id,array['administrator','mayordomo','concierge']));
+ using(private.has_operations_role(community_id,array['administrator','mayordomo','concierge']));
 create policy property_parties_private_admin_insert on public.property_parties_private
  for insert to authenticated
- with check(public.has_operations_role(community_id,array['administrator']) and synthetic=true and created_by=auth.uid() and updated_by=auth.uid());
+ with check(private.has_operations_role(community_id,array['administrator']) and synthetic=true and created_by=auth.uid() and updated_by=auth.uid());
 create policy property_parties_private_admin_update on public.property_parties_private
  for update to authenticated
- using(public.has_operations_role(community_id,array['administrator']))
- with check(public.has_operations_role(community_id,array['administrator']) and synthetic=true);
+ using(private.has_operations_role(community_id,array['administrator']))
+ with check(private.has_operations_role(community_id,array['administrator']) and synthetic=true);
 
 create policy property_asset_occupancy_parking_lookup on public.property_asset_occupancy
  for select to authenticated
- using(public.has_operations_role(community_id,array['administrator','mayordomo','concierge']));
+ using(private.has_operations_role(community_id,array['administrator','mayordomo','concierge']));
 create policy property_asset_occupancy_admin_insert on public.property_asset_occupancy
  for insert to authenticated
- with check(public.has_operations_role(community_id,array['administrator']) and created_by=auth.uid() and updated_by=auth.uid());
+ with check(private.has_operations_role(community_id,array['administrator']) and created_by=auth.uid() and updated_by=auth.uid());
 create policy property_asset_occupancy_admin_update on public.property_asset_occupancy
  for update to authenticated
- using(public.has_operations_role(community_id,array['administrator']))
- with check(public.has_operations_role(community_id,array['administrator']));
+ using(private.has_operations_role(community_id,array['administrator']))
+ with check(private.has_operations_role(community_id,array['administrator']));
 
 create or replace function public.command_parking_assignment(
  p_community_id text,
@@ -300,7 +300,7 @@ declare
  v_vehicle text:=nullif(trim(p_vehicle_reference),'');
  v_status text;
 begin
- if not public.has_operations_role(p_community_id,array['administrator']) then
+ if not private.has_operations_role(p_community_id,array['administrator']) then
   raise exception 'parking_permission_denied' using errcode='42501';
  end if;
  select * into v_asset
