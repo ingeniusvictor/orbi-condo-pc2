@@ -1,15 +1,26 @@
 /* Route-scoped geometry corrections for the interactive parking maps.
-   Dense vertical strips must be allowed to shrink inside their allocated plan area;
-   otherwise the module-level 22/28px minimums force rows to overflow and visually stack. */
+   Keep the exterior compact, but give the underground plan enough real width to
+   preserve the validated geometry without dense columns colliding. */
 
 [aria-label="Mapas interactivos de estacionamientos"] > article:nth-of-type(1) > div:last-child {
   min-height: 720px !important;
 }
 
+/* The underground plan is intrinsically wider than the viewport area left beside
+   the quick-detail panel. Give it a fixed technical-plan canvas and allow horizontal
+   scrolling instead of squeezing parking rows until they overlap. */
+[aria-label="Mapas interactivos de estacionamientos"] > article:nth-of-type(2) {
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+}
+
 [aria-label="Mapas interactivos de estacionamientos"] > article:nth-of-type(2) > div:last-child {
+  min-width: 1280px !important;
   min-height: 900px !important;
 }
 
+/* Dense vertical strips must be allowed to shrink inside their allocated plan area;
+   otherwise the module-level minimum heights force rows to overflow. */
 [aria-label="Mapas interactivos de estacionamientos"] div:has(> button[title]) {
   grid-auto-rows: minmax(0, 1fr) !important;
   min-height: 0;
@@ -21,19 +32,46 @@
   line-height: 1;
 }
 
+/* Separate the 126–102 column from the central island, and make the 91–101 column
+   start below it instead of occupying the same vertical band. These selectors target
+   the CSS-module generated class names without changing the parking data or sequence. */
+[aria-label="Mapas interactivos de estacionamientos"] [class*="subEast"] {
+  left: 56% !important;
+  top: 24% !important;
+  width: 4.8% !important;
+  height: 42% !important;
+}
+
+[aria-label="Mapas interactivos de estacionamientos"] [class*="subSouth"] {
+  left: 50% !important;
+  top: 69% !important;
+  bottom: auto !important;
+  width: 4.8% !important;
+  height: 25% !important;
+}
+
+[aria-label="Mapas interactivos de estacionamientos"] [class*="subCenter"] {
+  width: 22% !important;
+}
+
 @media (max-width: 1180px) {
   [aria-label="Mapas interactivos de estacionamientos"] > article:nth-of-type(1) > div:last-child {
     min-height: 660px !important;
   }
 
   [aria-label="Mapas interactivos de estacionamientos"] > article:nth-of-type(2) > div:last-child {
-    min-height: 820px !important;
+    min-width: 1220px !important;
+    min-height: 840px !important;
   }
 }
 
 @media (max-width: 800px) {
-  [aria-label="Mapas interactivos de estacionamientos"] > article:nth-of-type(1) > div:last-child,
-  [aria-label="Mapas interactivos de estacionamientos"] > article:nth-of-type(2) > div:last-child {
+  [aria-label="Mapas interactivos de estacionamientos"] > article:nth-of-type(1) > div:last-child {
     min-height: 620px !important;
+  }
+
+  [aria-label="Mapas interactivos de estacionamientos"] > article:nth-of-type(2) > div:last-child {
+    min-width: 1180px !important;
+    min-height: 820px !important;
   }
 }
