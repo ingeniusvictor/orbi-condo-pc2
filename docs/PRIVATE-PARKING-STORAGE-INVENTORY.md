@@ -1,96 +1,163 @@
 # Estacionamientos y Bodegas · arquitectura privada
 
-Estado: **DISEÑO PREPARADO · SYNTHETIC STAGING ONLY · SIN PII REAL**
+Estado: **ESTACIONAMIENTOS IMPLEMENTADOS EN STAGING · SYNTHETIC STAGING ONLY · SIN PII REAL**
 
 ## Objetivo
 
-Preparar un inventario privado para Administración que permita gestionar los 110 estacionamientos y 48 bodegas de Parque Ciudadano II sin exponer datos personales en el Portal de la Comunidad.
+Mantener un inventario privado y auditable para Administración, Conserjería y Mayordomía que permita localizar rápidamente un puesto de estacionamiento, relacionarlo con una unidad y consultar si está asociado al propietario o a un arrendatario.
 
-## Separación pública / privada
+La superficie pública del Portal de la Comunidad continúa separada: no publica nombres, ocupantes, vehículos ni relaciones individuales.
 
-### Portal de la Comunidad
-Puede mostrar únicamente información agregada e institucional:
-- 110 estacionamientos;
-- 48 bodegas;
-- 278 departamentos;
-- 1 local comercial;
-- distribución general y referencias documentales.
+## Inventario físico validado
 
-No debe publicar nombres, teléfonos, correos, RUT, patentes, contratos, ausencias ni relaciones de propiedad/arrendamiento individual.
+La matriz física de estacionamientos se mantiene separada del dato registral/documental agregado de recepción.
 
-### Administración privada
-La futura superficie autenticada podrá asociar cada activo con una unidad y, cuando se autorice el tratamiento de datos reales, con su relación de ocupación.
+### Exterior / primer piso
+- 72 puestos de residentes: `E1`–`E72`;
+- 2 puestos de visitas: `V01`–`V02`;
+- 2 puestos de comercio: `LC01`–`LC02`;
+- total físico exterior: **76**.
 
-## Modelo propuesto
+### Subterráneo
+- 110 puestos numerados de forma continua: `73`–`182`;
+- total físico subterráneo: **110**.
+
+### Total físico de referencia
+
+**186 puestos** = 76 exteriores + 110 subterráneos.
+
+Este total físico no reemplaza automáticamente cifras jurídicas o de recepción usadas en otras superficies del producto. Cada fuente conserva su contexto.
+
+## Implementación OC-PC2-110
 
 ### `property_assets`
 Inventario estable del condominio.
 
-Campos previstos:
-- `id`
-- `community_id`
-- `asset_type`: `parking` | `storage`
-- `asset_code`
-- `status`: `available` | `assigned` | `leased` | `loaned` | `review`
-- `linked_unit_code` nullable
-- `notes_private` nullable, restringido
-- `active`
-- timestamps / revision
+Campos principales:
+- `id`;
+- `community_id`;
+- `asset_type`: `parking` | `storage`;
+- `asset_code`;
+- `parking_level`: `exterior` | `subterranean`;
+- `parking_class`: `resident` | `visit` | `commercial`;
+- `zone_code`;
+- `status`: `available` | `assigned` | `leased` | `loaned` | `review`;
+- `linked_unit_code`;
+- `sort_order`;
+- `active`;
+- timestamps y `revision`.
 
-Restricciones:
-- código único por comunidad + tipo;
-- sin DELETE operativo;
-- cambios auditables;
-- sin PII en el identificador del activo.
+El estacionamiento físico es permanente aunque cambie su ocupación.
+
+### `property_parties_private`
+Referencia privada a una persona/parte vinculada con el activo.
+
+En este gate acepta **únicamente fixtures sintéticos**:
+- alias `SINT-*`;
+- unidad `DEMO-*`;
+- `synthetic=true` obligatorio.
+
+No se permiten todavía nombres reales, RUT, teléfonos ni correos.
 
 ### `property_asset_occupancy`
-Relación temporal entre activo y ocupación.
+Relación temporal entre activo y parte:
+- `owner`;
+- `tenant`;
+- `authorized_user`;
+- `loaned`.
 
-Campos previstos:
-- `id`
-- `community_id`
-- `asset_id`
-- `relationship`: `owner` | `tenant` | `authorized_user` | `loaned`
-- `party_reference_id` nullable
-- `valid_from`
-- `valid_until` nullable
-- `active`
-- timestamps / revision
+Permite conservar el historial cuando un estacionamiento cambia de arrendatario o vuelve a uso del propietario. No hay DELETE operativo.
 
-`party_reference_id` no debe contener el nombre en texto libre. Cuando se habiliten datos reales deberá apuntar a una entidad privada con controles de acceso específicos.
+## Permisos
 
-## Experiencia de Administración prevista
+### Conserjería
+Permiso `lookup_parking`:
+- buscar puesto;
+- consultar nivel, sector y estado;
+- ver unidad/alias privado habilitado;
+- identificar propietario o arrendatario vigente;
+- ver referencia sintética de vehículo en staging.
 
-La navegación será:
+No puede modificar relaciones.
 
-`Administración → Estacionamientos y Bodegas`
+### Mayordomía
+Permiso `lookup_parking` con la misma consulta operativa.
 
-La vista compacta debe permitir:
-- buscar por código de estacionamiento o bodega;
-- filtrar por tipo y estado;
-- ver vínculo con departamento cuando exista;
-- detectar activos sin asignación o en revisión;
-- abrir una ficha de detalle;
-- modificar una asignación sólo con permiso administrativo y auditoría.
+No puede modificar relaciones en este gate.
 
-La vista extendida podrá mostrar el inventario tabular completo.
+### Administración
+Permisos `lookup_parking` + `manage_parking`:
+- consulta completa;
+- edición de propietario/arrendatario;
+- vínculo con unidad;
+- referencia de vehículo;
+- marcar revisión;
+- cambios con revisión optimista y auditoría.
 
-## Privacidad
+## API privada
 
-Hasta que exista aprobación formal para datos reales:
+### `GET /api/operations/parking`
+Devuelve:
+- resumen físico;
+- catálogo mínimo para renderizar los mapas;
+- búsqueda por puesto, unidad, alias privado o vehículo.
+
+Ejemplos de búsqueda:
+- `126` → estacionamiento subterráneo 126;
+- `12` → exterior `E12`;
+- `V1` → `V01`;
+- alias `SINT-*`;
+- unidad o vehículo `DEMO-*`.
+
+Requiere `lookup_parking` y usa autorización server-side + RLS.
+
+### `POST /api/operations/parking/command`
+Comando administrativo para actualizar relación y ocupación.
+
+Controles:
+- origen confiable;
+- permiso `manage_parking`;
+- revisión optimista;
+- RPC transaccional;
+- auditoría;
+- guardas `SINT-*` / `DEMO-*`.
+
+## Interfaz privada
+
+Ruta:
+
+`/operaciones/estacionamientos`
+
+Incluye:
+- buscador rápido;
+- mapa interactivo exterior;
+- mapa interactivo subterráneo;
+- clic directo sobre cada puesto;
+- ficha de relación;
+- estado visual;
+- edición administrativa sintética;
+- acceso directo desde `/operaciones` para roles con `lookup_parking`.
+
+La UI no consulta Supabase directamente: todas las operaciones pasan por rutas privadas server-side.
+
+## Privacidad y producción
+
+Hasta una aprobación posterior y explícita:
 - no cargar nombres reales;
 - no cargar RUT;
 - no cargar teléfonos ni correos;
 - no cargar patentes reales;
-- no cargar contratos o documentos personales;
-- usar únicamente identidades y unidades sintéticas para QA.
+- no cargar contratos ni documentos personales;
+- no promover este flujo a Production;
+- usar únicamente alias `SINT-*`, unidades `DEMO-*` y vehículos `DEMO-*`.
 
-## Próxima implementación técnica
+La migración incorpora restricciones de base de datos para bloquear accidentalmente valores que no sigan esas convenciones durante este gate.
 
-1. cerrar el modelo de permisos para inventario patrimonial;
-2. crear migración staging con RLS;
-3. crear API privada server-side;
-4. incorporar módulo Compacta/Extendida;
-5. sembrar sólo fixtures sintéticos;
-6. certificar búsquedas, asignaciones y auditoría;
-7. mantener Production bloqueado hasta aprobación específica de datos reales.
+## Próximos gates
+
+1. certificar CI, búsqueda y edición reversible en staging;
+2. validar visualmente los dos mapas en Preview;
+3. completar política de tratamiento y acceso a PII real;
+4. diseñar importación/carga inicial administrativa con trazabilidad;
+5. extender la misma arquitectura a las 48 bodegas;
+6. mantener Production bloqueado hasta aprobación específica.
