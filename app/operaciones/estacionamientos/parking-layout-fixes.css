@@ -1,0 +1,39 @@
+/* Route-scoped geometry corrections for the interactive parking maps.
+   Dense vertical strips must be allowed to shrink inside their allocated plan area;
+   otherwise the module-level 22/28px minimums force rows to overflow and visually stack. */
+
+[aria-label="Mapas interactivos de estacionamientos"] > article:nth-of-type(1) > div:last-child {
+  min-height: 720px !important;
+}
+
+[aria-label="Mapas interactivos de estacionamientos"] > article:nth-of-type(2) > div:last-child {
+  min-height: 900px !important;
+}
+
+[aria-label="Mapas interactivos de estacionamientos"] div:has(> button[title]) {
+  grid-auto-rows: minmax(0, 1fr) !important;
+  min-height: 0;
+}
+
+[aria-label="Mapas interactivos de estacionamientos"] button[title] {
+  min-height: 0 !important;
+  height: 100%;
+  line-height: 1;
+}
+
+@media (max-width: 1180px) {
+  [aria-label="Mapas interactivos de estacionamientos"] > article:nth-of-type(1) > div:last-child {
+    min-height: 660px !important;
+  }
+
+  [aria-label="Mapas interactivos de estacionamientos"] > article:nth-of-type(2) > div:last-child {
+    min-height: 820px !important;
+  }
+}
+
+@media (max-width: 800px) {
+  [aria-label="Mapas interactivos de estacionamientos"] > article:nth-of-type(1) > div:last-child,
+  [aria-label="Mapas interactivos de estacionamientos"] > article:nth-of-type(2) > div:last-child {
+    min-height: 620px !important;
+  }
+}
